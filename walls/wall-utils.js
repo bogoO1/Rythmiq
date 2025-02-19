@@ -23,7 +23,5 @@ export function createWall(lowerCorner, upperCorner) {
 }
 
 export function buildRoom(scene, room) {
-  for (let i = 0; i < room.length; i += 2) {
-    scene.add(createWall(room[i], room[i + 1]));
-  }
+  room.forEach((wall) => scene.add(createWall(wall[0], wall[1])));
 }
