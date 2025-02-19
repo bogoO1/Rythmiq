@@ -13,15 +13,11 @@ export function createWall(lowerCorner, upperCorner) {
     Math.abs(size.y),
     Math.abs(size.z)
   );
-  const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xffaaaa });
+  const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xffaaaa });
 
   const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
 
   wallMesh.position.copy(pos);
 
   return wallMesh;
-}
-
-export function buildRoom(scene, room) {
-  room.forEach((wall) => scene.add(createWall(wall[0], wall[1])));
 }

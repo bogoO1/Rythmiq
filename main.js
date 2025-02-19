@@ -3,7 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createWall } from "./walls/wall-utils";
 import { getPhongFShader } from "./shader_utils";
 import testRoom from "./walls/rooms/test-room";
-console.log(getPhongFShader(1));
+import { interleaveAttributes } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 const scene = new THREE.Scene();
 let clock = new THREE.Clock();
@@ -21,8 +21,8 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 10, 20);
-camera.lookAt(0, 0, 0);
+camera.position.set(20, 30, 20);
+camera.lookAt(0, 5, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
