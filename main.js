@@ -47,7 +47,7 @@ document.addEventListener("mousemove", (event) => {
   if (document.pointerLockElement === document.body) {
     yaw -= event.movementX * lookSpeed; // Rotate left/right
     pitch -= event.movementY * lookSpeed; // Rotate up/down
-    pitch = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, pitch)); // Limit pitch angle (no 180 flips)
+    pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)); // Clamp pitch (-90° to 90°)
   }
 });
 
@@ -56,7 +56,7 @@ const clock = new THREE.Clock();
 
 function updateCameraPosition(deltaTime) {
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); // XZ only (Fixed Direction)
-  const right = new THREE.Vector3(forward.z, 0, -forward.x); // Perpendicular to forward
+  const right = new THREE.Vector3(forward.z, 0, -forward.x); // Right vector perpendicular to forward and up
 
   const velocity = moveSpeed * deltaTime; // Frame-independent speed
   let nextPosition = camera.position.clone(); // Predict next position
@@ -69,16 +69,44 @@ function updateCameraPosition(deltaTime) {
   nextPosition.y = 0; // Keep Y locked
 
   // Check collision BEFORE moving
-  if (!collisionSystem.willCollide(nextPosition)) {
+  const collision = collisionSystem.willCollide(nextPosition, camera);
+  if (!collision.colliding) {
     camera.position.copy(nextPosition);
+  } else {
+    // Project movement onto the collision plane to allow sliding
+    let slideDirection = nextPosition.clone().sub(camera.position).normalize();
+    slideDirection = slideDirection.projectOnPlane(collision.normal);
+
+    // Apply slide movement
+    const slideAmount = velocity * 0.5; // Reduce speed when sliding
+    const slidePosition = camera.position
+      .clone()
+      .addScaledVector(slideDirection, slideAmount);
+
+    // Final check if sliding is possible
+    if (!collisionSystem.willCollide(slidePosition, camera).colliding) {
+      camera.position.copy(slidePosition);
+    }
   }
 }
 
+// Use quaternions for rotation to prevent gimbal lock
 function updateCameraRotation() {
-  camera.rotation.set(pitch, yaw, 0); // Only allow pitch and yaw
+  const quaternion = new THREE.Quaternion();
+
+  // Rotate around X for pitch (up/down)
+  const pitchQuat = new THREE.Quaternion();
+  pitchQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitch);
+
+  // Rotate around Y for yaw (left/right)
+  const yawQuat = new THREE.Quaternion();
+  yawQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+
+  // Apply yaw first, then pitch
+  quaternion.multiplyQuaternions(yawQuat, pitchQuat);
+  camera.quaternion.copy(quaternion);
 }
 
-// Animation loop
 function animate() {
   const deltaTime = clock.getDelta(); // Time since last frame
   updateCameraPosition(deltaTime);
