@@ -58,8 +58,8 @@ function updateCameraPosition(deltaTime) {
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); // XZ only (Fixed Direction)
   const right = new THREE.Vector3(forward.z, 0, -forward.x); // Right vector perpendicular to forward and up
 
-  const velocity = moveSpeed * deltaTime; // Frame-independent speed
-  let nextPosition = camera.position.clone(); // Predict next position
+  const velocity = moveSpeed * deltaTime;
+  let nextPosition = camera.position.clone();
 
   if (keys["KeyW"]) nextPosition.addScaledVector(forward, velocity);
   if (keys["KeyS"]) nextPosition.addScaledVector(forward, -velocity);
@@ -73,12 +73,12 @@ function updateCameraPosition(deltaTime) {
   if (!collision.colliding) {
     camera.position.copy(nextPosition);
   } else {
-    // Project movement onto the collision plane to allow sliding
+    // Slide along the collision surface
     let slideDirection = nextPosition.clone().sub(camera.position).normalize();
     slideDirection = slideDirection.projectOnPlane(collision.normal);
 
     // Apply slide movement
-    const slideAmount = velocity * 0.5; // Reduce speed when sliding
+    const slideAmount = velocity * 0.5;
     const slidePosition = camera.position
       .clone()
       .addScaledVector(slideDirection, slideAmount);
@@ -86,10 +86,12 @@ function updateCameraPosition(deltaTime) {
     // Final check if sliding is possible
     if (!collisionSystem.willCollide(slidePosition, camera).colliding) {
       camera.position.copy(slidePosition);
+    } else if (collision.pushOutVector) {
+      // If still colliding, push player out
+      camera.position.add(collision.pushOutVector);
     }
   }
 }
-
 // Use quaternions for rotation to prevent gimbal lock
 function updateCameraRotation() {
   const quaternion = new THREE.Quaternion();

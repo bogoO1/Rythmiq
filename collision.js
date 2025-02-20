@@ -1,3 +1,4 @@
+// collision.js
 import * as THREE from "three";
 
 export class CameraCollision {
@@ -6,24 +7,54 @@ export class CameraCollision {
   }
 
   willCollide(nextPosition, camera) {
-    const boundingBox = new THREE.Box3().setFromCenterAndSize(
-      nextPosition,
-      new THREE.Vector3(1, 1, 1)
-    );
+    const boundingBox = this.getDynamicBoundingBox(nextPosition, camera);
+    let collisionDetected = false;
+    let pushOutVector = new THREE.Vector3(0, 0, 0);
+    let normal;
 
     for (let object of this.scene.children) {
       if (object.isMesh) {
         let objectBox = new THREE.Box3().setFromObject(object);
         if (boundingBox.intersectsBox(objectBox)) {
-          // Find collision normal and allow sliding
-          const normal = this.getCollisionNormal(objectBox, camera);
-          return { colliding: true, normal: normal };
+          collisionDetected = true;
+
+          // Calculate push-out direction
+          normal = this.getCollisionNormal(objectBox, camera);
+
+          // Push the player slightly out
+          pushOutVector.add(normal.multiplyScalar(0.1));
         }
       }
     }
-    return { colliding: false, normal: null };
-  }
 
+    return {
+      colliding: collisionDetected,
+      normal: normal,
+      pushOutVector: collisionDetected ? pushOutVector : null,
+    };
+  }
+  getDynamicBoundingBox(position, camera) {
+    let forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+
+    // Ignore Y-axis movement to keep bounding box stable in XZ plane
+    forward.y = 0;
+    forward.normalize(); // Re-normalize after zeroing Y
+
+    // Bounding box dimensions: wider in XZ plane, taller, and deeper in forward direction
+    const boxSize = new THREE.Vector3(
+      0.1, // Width (Left-Right)
+      0.1, // Height (Up-Down)
+      0.5 // Depth (Forward-Backward)
+    );
+
+    // Shift the bounding box slightly forward
+    const centerOffset = forward.clone().multiplyScalar(0); // Moves box forward
+    const boxCenter = position.clone().add(centerOffset);
+
+    // Create the bounding box
+    return new THREE.Box3().setFromCenterAndSize(boxCenter, boxSize);
+  }
   getCollisionNormal(objectBox, camera) {
     const cameraPosition = camera.position.clone();
 
