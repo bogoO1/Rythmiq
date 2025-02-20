@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
-// Function should also accept shader, material parameters, and geometry types
 export function createWall(lowerCorner, upperCorner) {
+  // TODO: add support for angled walls in func.
   const pos = new THREE.Vector3()
     .addVectors(lowerCorner, upperCorner)
     .divideScalar(2);
