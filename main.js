@@ -4,6 +4,12 @@ import { CameraCollision } from "./collision.js";
 import { WalkingSound } from "./walking_sound.js";
 
 // Scene setup
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { getPhongFShader } from "./shader_utils";
+import { PlayerController } from "./movement.js";
+
+// console.log(getPhongFShader(1));
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -191,6 +197,16 @@ function animate() {
   updateCameraRotation();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
-}
 
+  const t = clock.getElapsedTime();
+
+  if (controls.enabled) {
+    controls.update();
+  }
+
+  // Update player movement and camera control
+  playerController.update();
+
+  renderer.render(scene, camera);
+}
 animate();
