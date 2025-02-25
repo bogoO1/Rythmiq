@@ -61,6 +61,19 @@ const cube = new THREE.Mesh(boxGeo, boxMat);
 cube.position.set(0, 0, 3); // Example obstacle
 scene.add(cube);
 
+//wall objects
+const wallTexture = loader.load('textures/seaworn_sandstone_brick.png');
+wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
+wallTexture.repeat.set(4, 4); 
+const wallGeometry = new THREE.BoxGeometry(10, 10, 0.5); // Width, height, depth
+const wallMaterial = new THREE.MeshPhongMaterial({
+  map: wallTexture
+});
+const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+wall.position.set(5, -1, 0); // Adjust position accordingly
+scene.add(wall);
+
+
 // Movement input tracking
 const keys = {};
 window.addEventListener("keydown", (event) => (keys[event.code] = true));
