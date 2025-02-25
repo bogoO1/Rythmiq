@@ -51,28 +51,40 @@ let yaw = 0,
 // Collision Detection System
 const collisionSystem = new CameraCollision(scene);
 
-// Add test objects (obstacles)
-const boxGeo = new THREE.BoxGeometry();
-const boxMat = new THREE.MeshBasicMaterial({
-  color: 0xff0000,
-  wireframe: true,
-});
-const cube = new THREE.Mesh(boxGeo, boxMat);
-cube.position.set(0, 0, 3); // Example obstacle
-scene.add(cube);
 
 //wall objects
 const wallTexture = loader.load('textures/seaworn_sandstone_brick.png');
 wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
-wallTexture.repeat.set(4, 4); 
-const wallGeometry = new THREE.BoxGeometry(10, 10, 0.5); // Width, height, depth
-const wallMaterial = new THREE.MeshPhongMaterial({
-  map: wallTexture
-});
-const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-wall.position.set(5, -1, 0); // Adjust position accordingly
-scene.add(wall);
+wallTexture.repeat.set(100, 10); 
 
+const wallMaterial = new THREE.MeshPhongMaterial({
+  map: wallTexture,
+  shininess: 10, // Reduced shininess for a matte look
+  specular: new THREE.Color(0x222222),
+});
+const wall1Geometry = new THREE.BoxGeometry(100, 10, 0.5);
+
+
+const wallFront = new THREE.Mesh(wall1Geometry, wallMaterial);//front
+wallFront.position.set(0, 4, -50); // Adjust position accordingly
+
+const wallBack = new THREE.Mesh(wall1Geometry, wallMaterial);//back
+wallBack.position.set(0, 4, 50);
+
+const wallLeft = new THREE.Mesh(wall1Geometry, wallMaterial);//back
+wallLeft.rotation.y = Math.PI / 2;
+wallLeft.position.set(-50, 4, 0);
+
+const wallRight = new THREE.Mesh(wall1Geometry, wallMaterial);//back
+wallRight.rotation.y = Math.PI / 2;
+wallRight.position.set(50, 4, 0);
+
+
+
+scene.add(wallFront);
+scene.add(wallBack);
+scene.add(wallLeft);
+scene.add(wallRight);
 
 // Movement input tracking
 const keys = {};
