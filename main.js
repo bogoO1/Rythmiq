@@ -1,4 +1,8 @@
+// main.js
 import * as THREE from "three";
+import { CameraCollision } from "./collision.js";
+
+// Scene setup
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { getPhongFShader } from "./shader_utils";
 import { PlayerController } from "./movement.js";
@@ -6,18 +10,13 @@ import { PlayerController } from "./movement.js";
 // console.log(getPhongFShader(1));
 
 const scene = new THREE.Scene();
-let clock = new THREE.Clock();
-
 const camera = new THREE.PerspectiveCamera(
-  35,
+  75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.set(0, 10, 20);
-camera.lookAt(0, 0, 0);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -49,6 +48,10 @@ scene.add(wall);
 // scene.add(planet1);
 
 function animate() {
+  const deltaTime = clock.getDelta(); // Time since last frame
+  updateCameraPosition(deltaTime);
+  updateCameraRotation();
+  renderer.render(scene, camera);
   requestAnimationFrame(animate);
 
   const t = clock.getElapsedTime();
