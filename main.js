@@ -70,6 +70,9 @@ wallTexture.repeat.set(4, 4);
 const wallGeometry = new THREE.BoxGeometry(10, 10, 0.5); // Width, height, depth
 const wallMaterial = new THREE.MeshPhongMaterial({
   map: wallTexture,
+  shininess: 10, // Reduced shininess for a matte look
+  specular: new THREE.Color(0x222222),
+  map: wallTexture,
 });
 const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 wall.position.set(5, -1, 0);
