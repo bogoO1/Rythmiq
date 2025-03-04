@@ -1,6 +1,8 @@
 // main.js
 import * as THREE from "three";
 import { CameraCollision } from "./collision.js";
+import { startAudio, getFrequencyData } from "./audio.js";
+import { PlayerController } from "./movement.js";
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -14,6 +16,8 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+const playerController = new PlayerController(camera, scene);
+
 // Add Ambient Light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
 scene.add(ambientLight);
@@ -23,15 +27,15 @@ const groundGeometry = new THREE.PlaneGeometry(100, 100); // Adjust size as need
 
 // Load the granite tile texture
 const loader = new THREE.TextureLoader();
-const graniteTexture = loader.load('textures/granite_tile.png'); // Make sure to use the correct path where the texture is stored
+const graniteTexture = loader.load("textures/granite_tile.png"); // Make sure to use the correct path where the texture is stored
 graniteTexture.wrapS = graniteTexture.wrapT = THREE.RepeatWrapping;
 graniteTexture.repeat.set(10, 10); // Adjust based on the size of your geometry and the scale of the texture
 
 let groundMaterial = new THREE.MeshPhongMaterial({
   map: graniteTexture, // Use the loaded granite texture
   shininess: 60, // Adjust this value for the desired glossiness of the ceramic-like surface
-  specular: new THREE.Color('grey'), // Specular highlights to add reflective properties typical of polished granite
-  side: THREE.DoubleSide // Render both sides of the plane
+  specular: new THREE.Color("grey"), // Specular highlights to add reflective properties typical of polished granite
+  side: THREE.DoubleSide, // Render both sides of the plane
 });
 
 //groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -40,22 +44,14 @@ ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
 ground.position.y = -1; // Adjust height to align with the camera's y
 scene.add(ground);
 
-
 // Camera settings
 camera.position.set(0, 0, 5); // Start at y = 0
-const moveSpeed = 5; // Movement speed
-const lookSpeed = 0.002; // Mouse sensitivity
-let yaw = 0,
-  pitch = 0; // Camera rotation angles
-
-// Collision Detection System
-const collisionSystem = new CameraCollision(scene);
 
 
 //wall objects
-const wallTexture = loader.load('textures/seaworn_sandstone_brick.png');
+const wallTexture = loader.load("textures/seaworn_sandstone_brick.png");
 wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
-wallTexture.repeat.set(100, 10); 
+wallTexture.repeat.set(100, 10);
 
 const wallMaterial = new THREE.MeshPhongMaterial({
   map: wallTexture,
@@ -64,22 +60,19 @@ const wallMaterial = new THREE.MeshPhongMaterial({
 });
 const wall1Geometry = new THREE.BoxGeometry(100, 10, 0.5);
 
-
-const wallFront = new THREE.Mesh(wall1Geometry, wallMaterial);//front
+const wallFront = new THREE.Mesh(wall1Geometry, wallMaterial); //front
 wallFront.position.set(0, 4, -50); // Adjust position accordingly
 
-const wallBack = new THREE.Mesh(wall1Geometry, wallMaterial);//back
+const wallBack = new THREE.Mesh(wall1Geometry, wallMaterial); //back
 wallBack.position.set(0, 4, 50);
 
-const wallLeft = new THREE.Mesh(wall1Geometry, wallMaterial);//back
+const wallLeft = new THREE.Mesh(wall1Geometry, wallMaterial); //back
 wallLeft.rotation.y = Math.PI / 2;
 wallLeft.position.set(-50, 4, 0);
 
-const wallRight = new THREE.Mesh(wall1Geometry, wallMaterial);//back
+const wallRight = new THREE.Mesh(wall1Geometry, wallMaterial); //back
 wallRight.rotation.y = Math.PI / 2;
 wallRight.position.set(50, 4, 0);
-
-
 
 scene.add(wallFront);
 scene.add(wallBack);
@@ -95,78 +88,60 @@ window.addEventListener("keyup", (event) => (keys[event.code] = false));
 document.body.requestPointerLock =
   document.body.requestPointerLock || document.body.mozRequestPointerLock;
 document.addEventListener("click", () => document.body.requestPointerLock());
-document.addEventListener("mousemove", (event) => {
-  if (document.pointerLockElement === document.body) {
-    yaw -= event.movementX * lookSpeed; // Rotate left/right
-    pitch -= event.movementY * lookSpeed; // Rotate up/down
-    pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)); // Clamp pitch (-90° to 90°)
-  }
-});
+document.addEventListener("mousemove", playerController.handleMouseMove);
 
 // Clock for framerate-independent movement
 const clock = new THREE.Clock();
 
-function updateCameraPosition(deltaTime) {
-  const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); // XZ only (Fixed Direction)
-  const right = new THREE.Vector3(forward.z, 0, -forward.x); // Right vector perpendicular to forward and up
+document.addEventListener("keydown", playerController.handleKeyDown);
+document.addEventListener("keyup", playerController.handleKeyUp);
 
-  const velocity = moveSpeed * deltaTime;
-  let nextPosition = camera.position.clone();
 
-  if (keys["KeyW"]) nextPosition.addScaledVector(forward, velocity);
-  if (keys["KeyS"]) nextPosition.addScaledVector(forward, -velocity);
-  if (keys["KeyA"]) nextPosition.addScaledVector(right, velocity);
-  if (keys["KeyD"]) nextPosition.addScaledVector(right, -velocity);
-
-  nextPosition.y = 0; // Keep Y locked
-
-  // Check collision BEFORE moving
-  const collision = collisionSystem.willCollide(nextPosition, camera);
-  if (!collision.colliding) {
-    camera.position.copy(nextPosition);
-  } else {
-    // Slide along the collision surface
-    let slideDirection = nextPosition.clone().sub(camera.position).normalize();
-    slideDirection = slideDirection.projectOnPlane(collision.normal);
-
-    // Apply slide movement
-    const slideAmount = velocity * 0.5;
-    const slidePosition = camera.position
-      .clone()
-      .addScaledVector(slideDirection, slideAmount);
-
-    // Final check if sliding is possible
-    if (!collisionSystem.willCollide(slidePosition, camera).colliding) {
-      camera.position.copy(slidePosition);
-    } else if (collision.pushOutVector) {
-      // If still colliding, push player out
-      camera.position.add(collision.pushOutVector);
-    }
-  }
-}
-// Use quaternions for rotation to prevent gimbal lock
-function updateCameraRotation() {
-  const quaternion = new THREE.Quaternion();
-
-  // Rotate around X for pitch (up/down)
-  const pitchQuat = new THREE.Quaternion();
-  pitchQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitch);
-
-  // Rotate around Y for yaw (left/right)
-  const yawQuat = new THREE.Quaternion();
-  yawQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-
-  // Apply yaw first, then pitch
-  quaternion.multiplyQuaternions(yawQuat, pitchQuat);
-  camera.quaternion.copy(quaternion);
-}
+// Start audio processing
+document.addEventListener(
+  "click",
+  async () => {
+    await startAudio();
+  },
+  { once: true }
+);
 
 function animate() {
   const deltaTime = clock.getDelta(); // Time since last frame
-  updateCameraPosition(deltaTime);
-  updateCameraRotation();
-  renderer.render(scene, camera);
+  playerController.update(deltaTime)
   requestAnimationFrame(animate);
+
+  // Get frequency data
+  const frequencyData = getFrequencyData();
+
+  // Log some debug info
+  if (frequencyData.some((value) => value > 0)) {
+    console.log("Receiving audio data:", frequencyData);
+  }
+
+  // Visualization code
+  const canvas = document.getElementById("audioVisualizer");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const barWidth = canvas.width / frequencyData.length;
+    const barHeightMultiplier = canvas.height / 256; // since frequency data is 0-255
+
+    ctx.fillStyle = "#00ff00"; // Green bars
+    frequencyData.forEach((value, index) => {
+      const barHeight = value * barHeightMultiplier;
+      ctx.fillRect(
+        index * barWidth,
+        canvas.height - barHeight,
+        barWidth - 1,
+        barHeight
+      );
+    });
+  }
+
+  // Render the scene
+  renderer.render(scene, camera);
 }
 
 animate();
