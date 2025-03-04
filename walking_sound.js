@@ -14,6 +14,7 @@ export class WalkingSound {
       this.walkingSound.setVolume(0.5); // Adjust volume
     });
   }
+
   //playing the walking sound when the user moves
   play() {
     if (!this.walkingSound.isPlaying) {
