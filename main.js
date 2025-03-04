@@ -38,8 +38,7 @@ const graniteTexture = loader.load("textures/granite_tile.png");
 graniteTexture.wrapS = graniteTexture.wrapT = THREE.RepeatWrapping;
 graniteTexture.repeat.set(10, 10);
 
-// create a welcome scene
-const Walking = new WelcomeScreen(scene, camera);
+const welcomeScreen = new WelcomeScreen(scene, camera);
 
 let groundMaterial = new THREE.MeshPhongMaterial({
   map: graniteTexture,
@@ -157,9 +156,18 @@ navigator.mediaDevices
     function update() {
       requestAnimationFrame(update);
       const volume = getVolume();
-      const scale = Math.max(1, volume / 50); // Normalize volume to a suitable scale for your scene
-      audioReactiveSphere.scale.set(scale, scale, scale);
-      audioReactiveSphere.material.color = getColorBasedOnVolume(volume);
+      const targetScale = Math.max(1, volume / 50); // Normalize volume to a suitable scale for your scene
+      // Smoothly interpolate the scale
+      audioReactiveSphere.scale.x +=
+        (targetScale - audioReactiveSphere.scale.x) * 0.1;
+      audioReactiveSphere.scale.y +=
+        (targetScale - audioReactiveSphere.scale.y) * 0.1;
+      audioReactiveSphere.scale.z +=
+        (targetScale - audioReactiveSphere.scale.z) * 0.1;
+
+      const targetColor = getColorBasedOnVolume(volume);
+      currentColor.lerp(targetColor, 0.1);
+      audioReactiveSphere.material.color = currentColor;
     }
 
     update();
