@@ -111,10 +111,61 @@ const shaderMaterial = new THREE.ShaderMaterial({
   },
 });
 const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
-const sphere = new THREE.Mesh(sphereGeometry, shaderMaterial);
-sphere.position.set(0, 1, -10);
+const gradientSphere = new THREE.Mesh(sphereGeometry, shaderMaterial);
+gradientSphere.position.set(20, 1, -10);
 
-scene.add(sphere);
+scene.add(gradientSphere);
+
+//Audio_Reactive Sphere
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const audioReactiveSphere = new THREE.Mesh(sphereGeometry, material);
+audioReactiveSphere.position.set(0, 4, -10);
+scene.add(audioReactiveSphere);
+
+// Create an instance of AudioContext
+const audioContext = new AudioContext();
+
+// Access the microphone
+navigator.mediaDevices
+  .getUserMedia({ audio: true })
+  .then((stream) => {
+    const microphone = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    microphone.connect(analyser);
+
+    // FFT size for the analyser node
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function getVolume() {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i];
+      }
+      return sum / bufferLength;
+    }
+
+    function getColorBasedOnVolume(volume) {
+      const hue = (volume / 255) * 360; // Map volume to a hue value in the HSL color space
+      return new THREE.Color(`hsl(${hue}, 100%, 50%)`);
+    }
+
+    // Continuously update sphere size based on audio volume
+    function update() {
+      requestAnimationFrame(update);
+      const volume = getVolume();
+      const scale = Math.max(1, volume / 50); // Normalize volume to a suitable scale for your scene
+      audioReactiveSphere.scale.set(scale, scale, scale);
+      audioReactiveSphere.material.color = getColorBasedOnVolume(volume);
+    }
+
+    update();
+  })
+  .catch((err) => {
+    console.error("Error accessing microphone:", err);
+  });
 
 // Movement input tracking
 const keys = {};
