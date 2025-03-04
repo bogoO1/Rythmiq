@@ -117,7 +117,7 @@ scene.add(gradientSphere);
 //Audio_Reactive Sphere
 const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const audioReactiveSphere = new THREE.Mesh(sphereGeometry, material);
-audioReactiveSphere.position.set(0, 2, -10);
+audioReactiveSphere.position.set(0, 4, -10);
 scene.add(audioReactiveSphere);
 
 
@@ -145,12 +145,18 @@ navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         return sum / bufferLength;
     }
 
+    function getColorBasedOnVolume(volume) {
+      const hue = (volume / 255) * 360; // Map volume to a hue value in the HSL color space
+      return new THREE.Color(`hsl(${hue}, 100%, 50%)`);
+    }
+
     // Continuously update sphere size based on audio volume
     function update() {
         requestAnimationFrame(update);
         const volume = getVolume();
         const scale = Math.max(1, volume / 50); // Normalize volume to a suitable scale for your scene
         audioReactiveSphere.scale.set(scale, scale, scale);
+        audioReactiveSphere.material.color = getColorBasedOnVolume(volume);
     }
 
     update();
