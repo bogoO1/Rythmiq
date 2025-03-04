@@ -153,6 +153,7 @@ navigator.mediaDevices
     }
 
     // Continuously update sphere size based on audio volume
+    let currentColor = new THREE.Color(0xff0000);
     function update() {
       requestAnimationFrame(update);
       const volume = getVolume();
