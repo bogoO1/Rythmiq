@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { CameraCollision } from "./collision.js";
 import { WalkingSound } from "./walking_sound.js";
+import { WelcomeScreen } from "./loading_screen.js";
 
 // Scene setup
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -36,6 +37,9 @@ const loader = new THREE.TextureLoader();
 const graniteTexture = loader.load("textures/granite_tile.png");
 graniteTexture.wrapS = graniteTexture.wrapT = THREE.RepeatWrapping;
 graniteTexture.repeat.set(10, 10);
+
+// create a welcome scene
+const Walking = new WelcomeScreen(scene, camera);
 
 let groundMaterial = new THREE.MeshPhongMaterial({
   map: graniteTexture,
@@ -90,32 +94,27 @@ scene.add(wallBack);
 scene.add(wallLeft);
 scene.add(wallRight);
 
-
 //Adel Shaders
 async function loadShader(url) {
   const response = await fetch(url);
   return response.text();
 }
-const vertexShader = await loadShader('shaders/gradient.vert');
-const fragmentShader = await loadShader('shaders/gradient.frag');
+const vertexShader = await loadShader("shaders/gradient.vert");
+const fragmentShader = await loadShader("shaders/gradient.frag");
 const canvas = renderer.domElement;
 const shaderMaterial = new THREE.ShaderMaterial({
   vertexShader,
   fragmentShader,
   uniforms: {
-    renderWidth: {value: canvas.width},
-    renderHeight: {value: canvas.height}
-  }
+    renderWidth: { value: canvas.width },
+    renderHeight: { value: canvas.height },
+  },
 });
 const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
 const sphere = new THREE.Mesh(sphereGeometry, shaderMaterial);
 sphere.position.set(0, 1, -10);
 
 scene.add(sphere);
-
-
-
-
 
 // Movement input tracking
 const keys = {};
