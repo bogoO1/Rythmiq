@@ -90,6 +90,33 @@ scene.add(wallBack);
 scene.add(wallLeft);
 scene.add(wallRight);
 
+
+//Adel Shaders
+async function loadShader(url) {
+  const response = await fetch(url);
+  return response.text();
+}
+const vertexShader = await loadShader('shaders/gradient.vert');
+const fragmentShader = await loadShader('shaders/gradient.frag');
+const canvas = renderer.domElement;
+const shaderMaterial = new THREE.ShaderMaterial({
+  vertexShader,
+  fragmentShader,
+  uniforms: {
+    renderWidth: {value: canvas.width},
+    renderHeight: {value: canvas.height}
+  }
+});
+const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
+const sphere = new THREE.Mesh(sphereGeometry, shaderMaterial);
+sphere.position.set(0, 1, -10);
+
+scene.add(sphere);
+
+
+
+
+
 // Movement input tracking
 const keys = {};
 window.addEventListener("keydown", (event) => (keys[event.code] = true));
