@@ -1,6 +1,5 @@
 // main.js
 import * as THREE from "three";
-import { startAudio, getFrequencyData } from "./audio.js";
 import { PlayerController } from "./movement.js";
 import { addWalls } from "./walls/default.js";
 import AudioSphere from "./mic_effect/setup.js";
@@ -30,47 +29,19 @@ document.addEventListener("mousemove", playerController.handleMouseMove);
 document.addEventListener("keydown", playerController.handleKeyDown);
 document.addEventListener("keyup", playerController.handleKeyUp);
 
-// Start audio processing
-document.addEventListener(
-  "click",
-  async () => {
-    await startAudio();
-  },
-  { once: true }
-);
-
 const sphere = new AudioSphere(camera, scene);
 
-(() => sphere.setMaterial())();
+(async () => await sphere.setMaterial())();
+
+let time = 0;
 
 function animate() {
   const deltaTime = clock.getDelta(); // Time since last frame
+  time += deltaTime;
   playerController.update(deltaTime);
   requestAnimationFrame(animate);
 
-  // Get frequency data
-  const frequencyData = getFrequencyData();
-
-  // Visualization code
-  const canvas = document.getElementById("audioVisualizer");
-  if (canvas) {
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const barWidth = canvas.width / frequencyData.length;
-    const barHeightMultiplier = canvas.height / 256; // since frequency data is 0-255
-
-    ctx.fillStyle = "#00ff00"; // Green bars
-    frequencyData.forEach((value, index) => {
-      const barHeight = value * barHeightMultiplier;
-      ctx.fillRect(
-        index * barWidth,
-        canvas.height - barHeight,
-        barWidth - 1,
-        barHeight
-      );
-    });
-  }
+  sphere.updateAudioSphere(time);
 
   // Render the scene
   renderer.render(scene, camera);
