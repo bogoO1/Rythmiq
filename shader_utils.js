@@ -8,6 +8,15 @@ try {
   vertexShaderPhong = "";
 }
 
+export async function getShader(path) {
+  try {
+    return await (await fetch(path)).text();
+  } catch (error) {
+    console.error("Error loading shader:", path, "; Error: ", error);
+    return "";
+  }
+}
+
 export function getPhongFShader(numLights) {
   return fragmentShaderPhong
     .replaceAll("numLights", numLights)

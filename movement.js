@@ -14,6 +14,12 @@ import { CameraCollision } from "./collision.js";
  * set a basic run time for the player to move
  * storing the movement direction and keys
  */
+
+// Mouse movement tracking for look controls
+document.body.requestPointerLock =
+  document.body.requestPointerLock || document.body.mozRequestPointerLock;
+document.addEventListener("click", () => document.body.requestPointerLock());
+
 const moveSpeed = 5; // Movement speed
 const lookSpeed = 0.002; // Mouse sensitivity
 let yaw = 0,
