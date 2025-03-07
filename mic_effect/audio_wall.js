@@ -1,12 +1,32 @@
 import * as THREE from "three";
 
-import { getShader } from "../shader_utils";
+import { getShader } from "../shader_utils.js";
 import { startAudio, getFrequencyData } from "../audio.js";
 
-export default class AudioSphere {
-  constructor(camera, scene) {
+import { BLOOM_SCENE } from "../main.js";
+
+function createPlane(position, look, width, height) {
+  const planeGeometry = new THREE.PlaneGeometry(
+    width,
+    height,
+    width * 10,
+    height * 10
+  );
+
+  const planeMaterial = new THREE.ShaderMaterial({});
+
+  const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+
+  planeMesh.position.copy(position);
+  planeMesh.lookAt(look);
+
+  return planeMesh;
+}
+
+export default class AudioWall {
+  constructor(camera, scene, position, look, width, height) {
     // Start audio processing
-    const sphereMaterialProperties = {
+    const wallMaterialProperties = {
       color: 0x0000ff,
       ambient: 0.5,
       diffusivity: 1.0,
@@ -15,7 +35,7 @@ export default class AudioSphere {
       smoothness: 100,
     };
 
-    const shape_color_rep = new THREE.Color(sphereMaterialProperties.color);
+    const shape_color_rep = new THREE.Color(wallMaterialProperties.color);
 
     let shape_color = new THREE.Vector4(
       shape_color_rep.r,
@@ -33,9 +53,14 @@ export default class AudioSphere {
     );
 
     this.uniforms = {
-      audio: { value: new Uint8Array() },
+      audio: { value: new Uint8Array(128) },
       shape_color: { value: shape_color },
       ambient: { value: 0.5 },
+      planePos: { value: position },
+      // normal: {
+      //   value: new THREE.Vector3().subVectors(look, position).normalize(),
+      // },
+      maxDist: { value: (Math.max(width, height) / 2.0) * Math.sqrt(2) },
     };
 
     this.vertexShader = "";
@@ -43,24 +68,25 @@ export default class AudioSphere {
 
     console.log(this.vertexShader);
 
-    this.material = new THREE.ShaderMaterial({
-      // vertexShader: this.vertexShader,
-      // fragmentShader: this.fragmentShader,
+    this.geometry = new THREE.PlaneGeometry(10, 10, 100, 100);
+    this.wall = createPlane(position, look, width, height);
+    this.wall.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
     });
-    this.geometry = new THREE.SphereGeometry(5, 100, 100);
-    this.sphere = new THREE.Mesh(this.geometry, this.material);
-    this.sphere.position.set(0, 5, -10);
-    this.addAudioSphere(scene);
+    this.wall.geometry.computeVertexNormals();
+
+    this.wall.layers.enable(BLOOM_SCENE);
+
+    this.addAudioWall(scene);
   }
 
-  addAudioSphere(scene) {
-    scene.add(this.sphere);
+  addAudioWall(scene) {
+    scene.add(this.wall);
   }
 
   async setMaterial() {
-    this.vertexShader = await getShader("/shaders/audio_sphere.vert");
-    this.fragmentShader = await getShader("/shaders/audio_sphere.frag");
+    this.vertexShader = await getShader("/shaders/audio_wall.vert");
+    this.fragmentShader = await getShader("/shaders/audio_wall.frag");
 
     console.log(this.fragmentShader);
 
@@ -70,10 +96,10 @@ export default class AudioSphere {
       uniforms: this.uniforms,
     });
 
-    this.sphere.material = this.material;
+    this.wall.material = this.material;
   }
 
-  updateAudioSphere(time) {
+  updateAudioWall(time) {
     // Get frequency data
     const frequencyData = getFrequencyData();
     this.uniforms.audio.value = frequencyData;
