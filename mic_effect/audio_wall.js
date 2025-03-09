@@ -1,16 +1,23 @@
 import * as THREE from "three";
 
 import { getShader } from "../shader_utils.js";
-import { startAudio, getFrequencyData } from "../audio.js";
+import { startMicAudio, getFrequencyDataMic, FFT_SIZE } from "../audio.js";
 
-import { BLOOM_SCENE } from "../main.js";
+import {
+  BLOOM_SCENE,
+  setUpBloomUniforms,
+} from "../bloom_effect/bloom_audio.js";
+
+const b = 5;
+
+// add a specific bloom to the audio wall to only bloom the higher intensities.
 
 function createPlane(position, look, width, height) {
   const planeGeometry = new THREE.PlaneGeometry(
     width,
     height,
-    width * 10,
-    height * 10
+    width * 100,
+    height * 100
   );
 
   const planeMaterial = new THREE.ShaderMaterial({});
@@ -23,9 +30,13 @@ function createPlane(position, look, width, height) {
   return planeMesh;
 }
 
+// user selects mic or .mp3 file.
+
 export default class AudioWall {
-  constructor(camera, scene, position, look, width, height) {
+  constructor(camera, scene, position, look, width, height, max_intensity = 2) {
     // Start audio processing
+    this.audioAnalyser;
+    setUpBloomUniforms(position, look, max_intensity);
     const wallMaterialProperties = {
       color: 0x0000ff,
       ambient: 0.5,
@@ -47,20 +58,33 @@ export default class AudioWall {
     document.addEventListener(
       "click",
       async () => {
-        await startAudio();
+        this.analyser = await startMicAudio();
       },
       { once: true }
     );
 
+    // document.addEventListener(
+    //   "click",
+    //   async () => {
+    //     setUpCustomAudio(this.onNewAudio);
+    //   },
+    //   { once: true }
+    // );
+    // this.analyser;
+    // (async () => (this.analyser = setUpCustomAudio(this.onNewAudio)))();
+
     this.uniforms = {
-      audio: { value: new Uint8Array(128) },
+      audio: { value: new Array(FFT_SIZE).fill(0) },
       shape_color: { value: shape_color },
       ambient: { value: 0.5 },
       planePos: { value: position },
       // normal: {
       //   value: new THREE.Vector3().subVectors(look, position).normalize(),
       // },
-      maxDist: { value: (Math.max(width, height) / 2.0) * Math.sqrt(2) },
+      maxDist: {
+        value: Math.min(width, height) / 2, //Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2)),
+      },
+      max_depth_intensity: { value: max_intensity },
     };
 
     this.vertexShader = "";
@@ -68,7 +92,6 @@ export default class AudioWall {
 
     console.log(this.vertexShader);
 
-    this.geometry = new THREE.PlaneGeometry(10, 10, 100, 100);
     this.wall = createPlane(position, look, width, height);
     this.wall.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
@@ -80,15 +103,32 @@ export default class AudioWall {
     this.addAudioWall(scene);
   }
 
+  onNewAudio(stream, audioContext) {
+    console.log("aud2: ", audioContext);
+    // this.audioAnalyser = startAudio(stream, audioContext);
+  }
+
   addAudioWall(scene) {
     scene.add(this.wall);
   }
 
   async setMaterial() {
-    this.vertexShader = await getShader("/shaders/audio_wall.vert");
-    this.fragmentShader = await getShader("/shaders/audio_wall.frag");
+    this.vertexShader = await getShader("/shaders/audio_wall.vert", [
+      {
+        textToReplace: "FFT_SIZE_REPLACE_1",
+        replaceValue: (FFT_SIZE - 1).toString(),
+      },
+      { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
+    ]);
+    this.fragmentShader = await getShader("/shaders/audio_wall.frag", [
+      {
+        textToReplace: "FFT_SIZE_REPLACE_1",
+        replaceValue: (FFT_SIZE - 1).toString(),
+      },
+      { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
+    ]);
 
-    console.log(this.fragmentShader);
+    console.log(this.vertexShader);
 
     this.material = new THREE.ShaderMaterial({
       vertexShader: this.vertexShader,
@@ -99,10 +139,32 @@ export default class AudioWall {
     this.wall.material = this.material;
   }
 
+  attenuationFunction(x) {
+    return (Math.pow(b, x) - 1) / (b - 1);
+  }
+
   updateAudioWall(time) {
     // Get frequency data
-    const frequencyData = getFrequencyData();
-    this.uniforms.audio.value = frequencyData;
+    const frequencyData = getFrequencyDataMic(this.analyser);
+    // for (let i = 0; i < frequencyData.length; i++) {
+    //   frequencyData[i] = i / 2;
+    // }
+    const previousAudioData = this.uniforms.audio.value;
+
+    let newFrequencyData = [];
+
+    for (let i = 0; i < frequencyData.length; i++) {
+      // newFrequencyData[i] = this.attenuationFunction(
+      //   Number(frequencyData[i]) / 255.0
+      // );
+      newFrequencyData[i] = frequencyData[i] / 255.0;
+    }
+    // console.log(newFrequencyData);
+    for (let i = 0; i < newFrequencyData.length; i++) {
+      this.uniforms.audio.value[i] =
+        previousAudioData[i] +
+        (newFrequencyData[i] - previousAudioData[i]) * 0.5; // Interpolating with a factor of 0.1
+    }
 
     // Visualization code
     const canvas = document.getElementById("audioVisualizer");
@@ -111,7 +173,7 @@ export default class AudioWall {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const barWidth = canvas.width / frequencyData.length;
-      const barHeightMultiplier = canvas.height / 256; // since frequency data is 0-255
+      const barHeightMultiplier = canvas.height / 255; // since frequency data is 0-255
 
       ctx.fillStyle = "#00ff00"; // Green bars
       frequencyData.forEach((value, index) => {

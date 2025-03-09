@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 import { getShader } from "../shader_utils.js";
-import { startAudio, getFrequencyData } from "../audio.js";
+import { startMicAudio, getFrequencyData, FFT_SIZE } from "../audio.js";
 
 export default class AudioSphere {
   constructor(camera, scene) {
@@ -27,13 +27,13 @@ export default class AudioSphere {
     document.addEventListener(
       "click",
       async () => {
-        await startAudio();
+        await startMicAudio();
       },
       { once: true }
     );
 
     this.uniforms = {
-      audio: { value: new Uint8Array(128) },
+      audio: { value: new Uint8Array(FFT_SIZE) },
       shape_color: { value: shape_color },
       ambient: { value: 0.5 },
       iResolution: { value: { x: 1, y: 1 } },
@@ -95,7 +95,7 @@ export default class AudioSphere {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const barWidth = canvas.width / frequencyData.length;
-      const barHeightMultiplier = canvas.height / 256; // since frequency data is 0-255
+      const barHeightMultiplier = canvas.height / 255; // since frequency data is 0-255
 
       ctx.fillStyle = "#00ff00"; // Green bars
       frequencyData.forEach((value, index) => {

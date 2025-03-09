@@ -8,9 +8,13 @@ try {
   vertexShaderPhong = "";
 }
 
-export async function getShader(path) {
+export async function getShader(path, replacements = []) {
   try {
-    return await (await fetch(path)).text();
+    let shaderText = await (await fetch(path)).text();
+    replacements.forEach(({ textToReplace, replaceValue }) => {
+      shaderText = shaderText.replaceAll(textToReplace, replaceValue);
+    });
+    return shaderText;
   } catch (error) {
     console.error("Error loading shader:", path, "; Error: ", error);
     return "";

@@ -1,10 +1,8 @@
 precision mediump float;
 #define FFT_SIZE FFT_SIZE_REPLACE
-#define MAX_INTENSITY_INDEX FFT_SIZE_REPLACE_1 // max index 511
-
 #define FFT_INTENSITY_STEP 0.003921 //255
 #define PI 3.14159
-uniform float audio[FFT_SIZE];
+uniform uint audio[FFT_SIZE];
 uniform float ambient, diffusivity, specularity, smoothness;
 uniform vec4 shape_color;
 uniform float maxDist;
@@ -40,23 +38,18 @@ void main() {
 	// vec4 color = vec4(shape_color.xyz*ambient, float(audio[0])/255.0);
 	float diff;
 
-	if (intensityLevel>=FFT_SIZE_REPLACE_1) {
-		// diff = float(audio[intensityLevel-1]-audio[intensityLevel]);
-		discard;
+	if (intensityLevel==511) {
+		diff = float(audio[intensityLevel-1]-audio[intensityLevel]);
 	} else {
 		diff = float(audio[intensityLevel+1]-audio[intensityLevel]);
 	}
 
 	float depth = maxDist/float(FFT_SIZE);
 
-	vec3 normal = normalize(depth*outVec+(abs(diff))*worldNormal);
+	vec3 normal = normalize(depth*outVec+(abs(diff*FFT_INTENSITY_STEP))*worldNormal);
 	// vec3 normal = normalize(abs(diff*FFT_INTENSITY_STEP)*outVec+depth*worldNormal);
 
-	if (intensityLevel<2) {
-		normal = worldNormal;
-	}
-
-	float angleDot = dot(normal, worldNormal);
+	float angleDot = dot(normal, normalizedVertexToEye);
 
 	if (angleDot>1.0) {
 		discard;
@@ -64,28 +57,16 @@ void main() {
 
 	float angle = 180.0*acos(angleDot)/PI; // Calculate the angle in radians 
 
-	// if (angle>90.0||intensity<=0.00) { // angle<40.0||
-	// 	discard;
-	// }
-
-	// Normalize the world position to a range of 0.0 to 1.0 for color output
-	// vec4 positionColor = (color+1.0)*0.5; // Assuming worldPosition is in the range of -1.0 to 1.0
-	float intensityC = clamp(intensity, 0.0, 1.0);
-
-	if (intensityC<=0.01) {
+	if (angle<85.0||intensity<0.02) { // angle<40.0||
 		discard;
 	}
 
-	// Encode intensity in the red channel
-	float encodedIntensity = intensityC;
+	// Normalize the world position to a range of 0.0 to 1.0 for color output
+	// vec4 positionColor = (color+1.0)*0.5; // Assuming worldPosition is in the range of -1.0 to 1.0
+	float intensityC = clamp(intensity, 0.02, 1.0);
+	// gl_FragColor = vec4(abs(normalizedVertexToEye.xyz), 1.0);
+	// gl_FragColor = vec4(normalizedVertexToEye/180.0, 0.0, 0.0, 1.0);
+	gl_FragColor = vec4(intensityC, 0.0, 0.0, 1.0); // Interpolate color across the rainbow based on intensity
 
-	// Optionally encode other data (e.g., depth) in the green channel
-	float depthValue = length(worldPosition-planePos)/maxDist; // Normalize depth
-	depthValue = clamp(depthValue, 0.0, 1.0); // Ensure it's in the range [0, 1]
-
-	// Encode a unique identifier for the audio wall in the blue channel
-	float audioWallIdentifier = 0.0; // Use 0.0 to indicate this is an audio wall pixel
-	vec3 intensityColor = hsv2rgb2(vec3(intensityC*0.83, 1.0, intensityC*0.2+0.8));
-	// Set the output color with encoded data
-	gl_FragColor = vec4(intensityColor, audioWallIdentifier); // Red: intensity, Green: depth, Blue: identifier, Alpha: 1
+	// gl_FragColor = vec4(hsv2rgb2(vec3(intensityC, 1.0, 1.0)), intensityC); // Interpolate color across the rainbow based on intensity
 }

@@ -2,7 +2,7 @@ precision mediump float;
 #define FFT_SIZE FFT_SIZE_REPLACE //512
 #define MAX_INTENSITY_INDEX FFT_SIZE_REPLACE_1 // max index 511
 
-uniform float audio[FFT_SIZE];
+uniform uint audio[FFT_SIZE];
 uniform vec3 planePos;
 uniform float maxDist;
 uniform float max_depth_intensity;
@@ -25,9 +25,9 @@ void main() {
 
 	float intensityF = dist*float(MAX_INTENSITY_INDEX);
 	float intensityRemainder = fract(intensityF);
-	intensityLevel = clamp(int(intensityF), 0, FFT_SIZE_REPLACE_1);
+	intensityLevel = clamp(int(intensityF), 0, 511);
 
-	intensity = (float(audio[intensityLevel])*(1.0-intensityRemainder)+float(audio[intensityLevel+1])*intensityRemainder); // interpolate between the next intensity level and the current one.
+	intensity = (float(audio[intensityLevel])*(1.0-intensityRemainder)+float(audio[intensityLevel+1])*intensityRemainder)/float(255); // interpolate between the next intensity level and the current one.
 
 	vec4 originalPosition = projectionMatrix*modelViewMatrix*vec4(position+max_depth_intensity*intensity*worldNormal, 1.0);
 

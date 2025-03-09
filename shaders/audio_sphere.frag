@@ -1,4 +1,4 @@
-uniform uint audio[128];
+uniform uint audio[512];
 uniform float ambient, diffusivity, specularity, smoothness;
 uniform vec4 shape_color;
 
