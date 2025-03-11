@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { CameraCollision } from "./collision.js";
-
+import { WalkingSound } from "./walking_sound.js";
 /*
  * create a character to be able to test and have him move
  * will be implemented later based on our setup style
@@ -27,7 +27,7 @@ let yaw = 0,
 // Collision Detection System
 let collisionSystem;
 
-function updateCameraPosition(deltaTime, camera, keys) {
+function updateCameraPosition(deltaTime, camera, keys, walkingSound) {
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); // XZ only (Fixed Direction)
   const right = new THREE.Vector3(forward.z, 0, -forward.x); // Right vector perpendicular to forward and up
 
@@ -44,6 +44,15 @@ function updateCameraPosition(deltaTime, camera, keys) {
   // Check collision BEFORE moving
   const collision = collisionSystem.willCollide(nextPosition, camera);
   if (!collision.colliding) {
+    console.log("here");
+    if (
+      nextPosition.x == camera.position.x &&
+      nextPosition.z == camera.position.z
+    ) {
+      walkingSound.stop();
+    } else {
+      walkingSound.play();
+    }
     camera.position.copy(nextPosition);
   } else {
     // Slide along the collision surface
@@ -59,9 +68,13 @@ function updateCameraPosition(deltaTime, camera, keys) {
     // Final check if sliding is possible
     if (!collisionSystem.willCollide(slidePosition, camera).colliding) {
       camera.position.copy(slidePosition);
+      walkingSound.play();
     } else if (collision.pushOutVector) {
       // If still colliding, push player out
       camera.position.add(collision.pushOutVector);
+      walkingSound.play();
+    } else {
+      walkingSound.stop();
     }
   }
 }
@@ -100,6 +113,8 @@ export class PlayerController {
       left: false,
       right: false,
     };
+
+    this.walkingSound = new WalkingSound(camera);
 
     //rotation of an object in 3D space using three angles
     this.euler = new THREE.Euler(0, 0, 0, "YXZ");
@@ -182,8 +197,15 @@ export class PlayerController {
   update(deltaTime) {
     // Only update movement when pointer is locked
     if (document.pointerLockElement === document.body) {
-      updateCameraPosition(deltaTime, this.camera, this.movement);
+      updateCameraPosition(
+        deltaTime,
+        this.camera,
+        this.movement,
+        this.walkingSound
+      );
       updateCameraRotation(this.camera);
+    } else {
+      this.walkingSound.stop();
     }
   }
 

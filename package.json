@@ -1,21 +1,9 @@
 {
-  "name": "mystery_maze",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "personalgit:bogoO1/Mystery_Maze.git"
-  },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "three": "^0.173.0"
   },
   "devDependencies": {
-    "vite": "^6.1.0"
+    "@vitejs/plugin-legacy": "^6.0.1",
+    "vite": "^6.1.1"
   }
 }
