@@ -10,6 +10,8 @@ import render, { setUpBloom } from "./bloom_effect/bloom_audio.js";
 import { createWalls } from "./walls.js";
 import { createGradientSphere } from './gradientSphere.js';
 import { createGround } from "./ground.js";
+import { addLight } from "./light.js";
+import AudioReactiveSphere from "./audioSphere.js";
 
 // console.log(getPhongFShader(1));
 
@@ -27,9 +29,9 @@ document.body.appendChild(renderer.domElement);
 const welcomeScreen = new WelcomeScreen(scene, camera);
 
 const loader = new THREE.TextureLoader();
-// Add Ambient Light
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
-scene.add(ambientLight);
+
+
+
 
 
 
@@ -44,6 +46,9 @@ let yaw = 0,
 const collisionSystem = new CameraCollision(scene);
 
 
+//add lighting
+addLight(scene);
+
 //create ground
 createGround(loader,scene);
 
@@ -55,12 +60,6 @@ createWalls(loader, scene);
 createGradientSphere(scene, renderer);
 
 //Audio_Reactive Sphere
-const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-const audioReactiveSphere = new THREE.Mesh(sphereGeometry, material);
-audioReactiveSphere.position.set(0, 4, -10);
-scene.add(audioReactiveSphere);
-
 // Create an instance of AudioContext
 let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -70,62 +69,10 @@ function startAudioContext() {
     audioContext.resume();
   }
 }
-
 // Add event listener to the document
 document.addEventListener('click', startAudioContext, { once: true });
-
-// Access the microphone
-navigator.mediaDevices
-  .getUserMedia({ audio: true })
-  .then((stream) => {
-    const microphone = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    microphone.connect(analyser);
-
-    // FFT size for the analyser node
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function getVolume() {
-      analyser.getByteFrequencyData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        sum += dataArray[i];
-      }
-      return sum / bufferLength;
-    }
-
-    function getColorBasedOnVolume(volume) {
-      const hue = (volume / 255) * 720; // Map volume to a hue value in the HSL color space
-      return new THREE.Color(`hsl(${hue}, 100%, 50%)`);
-    }
-
-    // Continuously update sphere size based on audio volume
-    let currentColor = new THREE.Color(0xff0000);
-    function update() {
-      requestAnimationFrame(update);
-      const volume = getVolume();
-      const targetScale = Math.max(1, volume / 50); // Normalize volume to a suitable scale for your scene
-      // Smoothly interpolate the scale
-      audioReactiveSphere.scale.x +=
-        (targetScale - audioReactiveSphere.scale.x) * 0.7;
-      audioReactiveSphere.scale.y +=
-        (targetScale - audioReactiveSphere.scale.y) * 0.7;
-      audioReactiveSphere.scale.z +=
-        (targetScale - audioReactiveSphere.scale.z) * 0.7;
-
-      const targetColor = getColorBasedOnVolume(volume);
-      currentColor.lerp(targetColor, 0.2);
-      audioReactiveSphere.material.color = currentColor;
-    }
-
-    update();
-  })
-  .catch((err) => {
-    console.error("Error accessing microphone:", err);
-  });
-  //adel code ends
+const audioSphere = new AudioReactiveSphere(scene, audioContext);
+audioSphere.setPosition(0,4,-10);
 
 // Movement input tracking
 const keys = {};
