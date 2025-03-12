@@ -6,6 +6,9 @@ import { PlayerController } from "./movement.js";
 import { addWalls } from "./walls/default.js";
 import AudioWall from "./mic_effect/audio_wall.js";
 import render, { setUpBloom } from "./bloom_effect/bloom_audio.js";
+// import { Texture_Rotate, Texture_Scroll_X } from "./box_object/box_fragment.js";
+import { createBoxes, updateBoxes } from "./box_object/cubes.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 // console.log(getPhongFShader(1));
 
@@ -16,9 +19,18 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
+camera.position.set(0, 0, -8);
+
 const renderer = new THREE.WebGLRenderer();
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+
+let isRotating = false;
+const { cube1, cube2 } = createBoxes(scene); // Create the boxes
 
 // Add Ambient Light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
@@ -244,10 +256,22 @@ function animate() {
 
   // Render the scene
   //  renderer.render(scene, camera);
+  updateBoxes(cube1, cube2, deltaTime, isRotating); // Update the boxes
   render();
 }
 
 animate();
+
+window.addEventListener("keydown", onKeyPress);
+function onKeyPress(event) {
+  switch (event.key) {
+    case "c":
+      isRotating = !isRotating;
+      break;
+    default:
+      break;
+  }
+}
 
 function handleWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
