@@ -9,6 +9,7 @@ import render, { setUpBloom } from "./bloom_effect/bloom_audio.js";
 
 import { createWalls } from "./walls.js";
 import { createGradientSphere } from './gradientSphere.js';
+import { createGround } from "./ground.js";
 
 // console.log(getPhongFShader(1));
 
@@ -23,33 +24,14 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+const welcomeScreen = new WelcomeScreen(scene, camera);
+
+const loader = new THREE.TextureLoader();
 // Add Ambient Light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
 scene.add(ambientLight);
 
-//ground implementation
-const groundGeometry = new THREE.PlaneGeometry(100, 100); // Adjust size as needed
 
-// Load the granite tile texture
-const loader = new THREE.TextureLoader();
-const graniteTexture = loader.load("textures/granite_tile.png"); // Make sure to use the correct path where the texture is stored
-graniteTexture.wrapS = graniteTexture.wrapT = THREE.RepeatWrapping;
-graniteTexture.repeat.set(10, 10); // Adjust based on the size of your geometry and the scale of the texture
-
-const welcomeScreen = new WelcomeScreen(scene, camera);
-
-let groundMaterial = new THREE.MeshPhongMaterial({
-  map: graniteTexture, // Use the loaded granite texture
-  shininess: 60, // Adjust this value for the desired glossiness of the ceramic-like surface
-  specular: new THREE.Color("grey"), // Specular highlights to add reflective properties typical of polished granite
-  side: THREE.DoubleSide, // Render both sides of the plane
-});
-
-//groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
-ground.position.y = -1; // Adjust height to align with the camera's y
-scene.add(ground);
 
 // Camera settings
 camera.position.set(0, 0, 5); // Start at y = 0
@@ -60,6 +42,10 @@ let yaw = 0,
 
 // Collision Detection System
 const collisionSystem = new CameraCollision(scene);
+
+
+//create ground
+createGround(loader,scene);
 
 //wall objects
 createWalls(loader, scene);
