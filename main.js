@@ -7,6 +7,7 @@ import { addWalls } from "./walls/default.js";
 import AudioWall from "./audio_effects/audio_wall.js";
 import render, { setUpBloom } from "./post_processing/setup_post.js";
 
+
 import { createWalls } from "./walls.js";
 import { createGradientSphere } from "./gradientSphere.js";
 import { createGround } from "./ground.js";
@@ -50,7 +51,6 @@ createGround(loader, scene);
 //wall objects
 createWalls(loader, scene);
 
-//Adel Shaders
 //gradient object
 createGradientSphere(scene, renderer);
 
