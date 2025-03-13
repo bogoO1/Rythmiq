@@ -44,7 +44,6 @@ function updateCameraPosition(deltaTime, camera, keys, walkingSound) {
   // Check collision BEFORE moving
   const collision = collisionSystem.willCollide(nextPosition, camera);
   if (!collision.colliding) {
-    console.log("here");
     if (
       nextPosition.x == camera.position.x &&
       nextPosition.z == camera.position.z

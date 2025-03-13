@@ -5,10 +5,10 @@ import { WelcomeScreen } from "./loading_screen.js";
 import { PlayerController } from "./movement.js";
 import { addWalls } from "./walls/default.js";
 import AudioWall from "./mic_effect/audio_wall.js";
-import render, { setUpBloom } from "./bloom_effect/bloom_audio.js";
+import render, { setUpBloom } from "./post_processing/setup_post.js";
 
 import { createWalls } from "./walls.js";
-import { createGradientSphere } from './gradientSphere.js';
+import { createGradientSphere } from "./gradientSphere.js";
 import { createGround } from "./ground.js";
 import { addLight } from "./light.js";
 import AudioReactiveSphere from "./audioSphere.js";
@@ -30,11 +30,6 @@ const welcomeScreen = new WelcomeScreen(scene, camera);
 
 const loader = new THREE.TextureLoader();
 
-
-
-
-
-
 // Camera settings
 camera.position.set(0, 0, 5); // Start at y = 0
 const moveSpeed = 5; // Movement speed
@@ -45,12 +40,11 @@ let yaw = 0,
 // Collision Detection System
 const collisionSystem = new CameraCollision(scene);
 
-
 //add lighting
 addLight(scene);
 
 //create ground
-createGround(loader,scene);
+createGround(loader, scene);
 
 //wall objects
 createWalls(loader, scene);
@@ -65,14 +59,14 @@ let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 // Function to start or resume AudioContext
 function startAudioContext() {
-  if (audioContext.state === 'suspended') {
+  if (audioContext.state === "suspended") {
     audioContext.resume();
   }
 }
 // Add event listener to the document
-document.addEventListener('click', startAudioContext, { once: true });
+document.addEventListener("click", startAudioContext, { once: true });
 const audioSphere = new AudioReactiveSphere(scene, audioContext);
-audioSphere.setPosition(0,4,-10);
+audioSphere.setPosition(0, 4, -10);
 
 // Movement input tracking
 const keys = {};

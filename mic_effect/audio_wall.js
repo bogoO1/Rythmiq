@@ -6,7 +6,7 @@ import { startMicAudio, getFrequencyDataMic, FFT_SIZE } from "../audio.js";
 import {
   BLOOM_SCENE,
   setUpBloomUniforms,
-} from "../bloom_effect/bloom_audio.js";
+} from "../post_processing/setup_post.js";
 
 const b = 5;
 
@@ -90,8 +90,6 @@ export default class AudioWall {
     this.vertexShader = "";
     this.fragmentShader = "";
 
-    console.log(this.vertexShader);
-
     this.wall = createPlane(position, look, width, height);
     this.wall.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
@@ -104,7 +102,7 @@ export default class AudioWall {
   }
 
   onNewAudio(stream, audioContext) {
-    console.log("aud2: ", audioContext);
+    // console.log("aud2: ", audioContext);
     // this.audioAnalyser = startAudio(stream, audioContext);
   }
 
@@ -127,8 +125,6 @@ export default class AudioWall {
       },
       { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
     ]);
-
-    console.log(this.vertexShader);
 
     this.material = new THREE.ShaderMaterial({
       vertexShader: this.vertexShader,
