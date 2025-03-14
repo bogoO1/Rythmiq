@@ -88,14 +88,14 @@ function startAudioContext() {
 // audio reactive sphere.
 document.addEventListener('click', startAudioContext, { once: true });
 
-const audioSphere  = new AudioReactiveSphere(scene, audioContext, { x: 43, y: 8, z: -47 });
-const audioSphere2 = new AudioReactiveSphere(scene, audioContext, { x: 47, y: 8, z: -43 });
-const audioSphere3 = new AudioReactiveSphere(scene, audioContext, { x: -43, y: 8, z: -47 });
-const audioSphere4 = new AudioReactiveSphere(scene, audioContext, { x: -47, y: 8, z: -43 });
-const audioSphere5 = new AudioReactiveSphere(scene, audioContext, { x: 43, y: 8, z: 47 });
-const audioSphere6 = new AudioReactiveSphere(scene, audioContext, { x: 47, y: 8, z: 43 });
-const audioSphere7 = new AudioReactiveSphere(scene, audioContext, { x: -43, y: 8, z: 47 });
-const audioSphere8 = new AudioReactiveSphere(scene, audioContext, { x: -47, y: 8, z: 43 });
+const audioSphere  = new AudioReactiveSphere(scene, audioContext, { x: 40, y: 8, z: -44 });
+const audioSphere2 = new AudioReactiveSphere(scene, audioContext, { x: 44, y: 8, z: -40 });
+const audioSphere3 = new AudioReactiveSphere(scene, audioContext, { x: -40, y: 8, z: -44 });
+const audioSphere4 = new AudioReactiveSphere(scene, audioContext, { x: -44, y: 8, z: -40 });
+const audioSphere5 = new AudioReactiveSphere(scene, audioContext, { x: 40, y: 8, z: 44 });
+const audioSphere6 = new AudioReactiveSphere(scene, audioContext, { x: 44, y: 8, z: 40 });
+const audioSphere7 = new AudioReactiveSphere(scene, audioContext, { x: -40, y: 8, z: 44 });
+const audioSphere8 = new AudioReactiveSphere(scene, audioContext, { x: -44, y: 8, z: 40 });
 
 
 
