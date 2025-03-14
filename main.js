@@ -54,7 +54,7 @@ graniteTexture.repeat.set(10, 10); // Adjust based on the size of your geometry 
 
 const welcomeScreen = new WelcomeScreen(scene, camera);
 // Camera settings
-camera.position.set(0, 0, 5); // Start at y = 0
+camera.position.set(0, 0, 0); // Start at y = 0
 const moveSpeed = 5; // Movement speed
 const lookSpeed = 0.002; // Mouse sensitivity
 let yaw = 0,
