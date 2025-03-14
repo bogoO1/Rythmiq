@@ -5,7 +5,9 @@ export function createWalls(loader, scene, isCrossSection = false) {
   wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
   wallTexture.repeat.set(100, 10);
   
-  const bumpTexture = loader.load('seaworn_sandstone_brick.jpg');
+  const bumpTexture = loader.load('textures/seaworn_sandstone_brick.png');
+  bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
+  bumpTexture.repeat.set(100, 10);
 
   const wallMaterial = new THREE.MeshPhongMaterial({
     map: wallTexture,
