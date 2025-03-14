@@ -63,7 +63,7 @@ export function updateBoxes(cube1, stars, deltaTime, isRotating) {
 
     if (isRotating) {
       cube1.rotate("x", 15);
-      star.mesh.rotation.y += THREE.MathUtils.degToRad(40) * deltaTime;
+      star.mesh.rotation.y += THREE.MathUtils.degToRad(80) * deltaTime;
     }
   });
 }

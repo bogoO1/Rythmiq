@@ -21,7 +21,7 @@ document.body.requestPointerLock =
 document.addEventListener("click", () => document.body.requestPointerLock());
 
 const moveSpeed = 5; // Movement speed
-const sprintMultiplier = 2;
+const sprintMultiplier = 5;
 const lookSpeed = 0.002; // Mouse sensitivity
 
 let yaw = 0,
@@ -35,7 +35,7 @@ function updateCameraPosition(deltaTime, camera, keys, walkingSound) {
 
   let velocity = moveSpeed * deltaTime;
 
-  if ((keys["ShiftLeft"] || keys["ShiftRight"]) && keys["forward"]) {
+  if (keys["sprint"]) {
     velocity *= sprintMultiplier;
   }
 
@@ -169,6 +169,10 @@ export class PlayerController {
       case "KeyD":
         this.movement.right = true;
         break;
+      case "ShiftLeft":
+      case "ShiftRight":
+        this.movement.sprint = true;
+        break;
     }
   }
 
@@ -186,6 +190,10 @@ export class PlayerController {
         break;
       case "KeyD":
         this.movement.right = false;
+        break;
+      case "ShiftLeft":
+      case "ShiftRight":
+        this.movement.sprint = false;
         break;
     }
   }

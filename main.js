@@ -211,12 +211,22 @@ window.addEventListener("keydown", onKeyPress);
 function onKeyPress(event) {
   switch (event.key) {
     case "c":
-      isRotating = !isRotating;
+      isRotating = true;
       break;
     default:
       break;
   }
 }
+
+window.addEventListener("keyup", (event) => {
+  switch (event.key) {
+    case "c":
+      isRotating = false;
+      break;
+    default:
+      break;
+  }
+});
 
 function handleWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
