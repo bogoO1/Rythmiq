@@ -2,13 +2,13 @@
 import * as THREE from 'three';
 
 class AudioReactiveSphere {
-  constructor(scene, audioContext) {
+  constructor(scene, audioContext, position = { x: 0, y: 0, z: -20 }) {
     this.scene = scene;
     this.audioContext = audioContext;
     this.sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
     this.material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     this.sphere = new THREE.Mesh(this.sphereGeometry, this.material);
-    this.sphere.position.set(0, 4, 10);
+    this.sphere.position.set(position.x, position.y, position.z);
     this.scene.add(this.sphere);
     this.setupMicrophone();
   }
@@ -23,7 +23,7 @@ class AudioReactiveSphere {
       const microphone = this.audioContext.createMediaStreamSource(stream);
       const analyser = this.audioContext.createAnalyser();
       microphone.connect(analyser);
-      analyser.fftSize = 256;
+      analyser.fftSize = 2048;
       this.dataArray = new Uint8Array(analyser.frequencyBinCount);
       this.analyser = analyser;
       this.update();
@@ -49,7 +49,7 @@ class AudioReactiveSphere {
   update() {
     requestAnimationFrame(this.update.bind(this));
     const volume = this.getVolume();
-    const targetScale = Math.max(1, volume / 50);
+    const targetScale = Math.max(1, 1+3*(volume/64));
     this.sphere.scale.x +=
       (targetScale - this.sphere.scale.x) * 0.7;
     this.sphere.scale.y +=
@@ -57,7 +57,7 @@ class AudioReactiveSphere {
     this.sphere.scale.z +=
       (targetScale - this.sphere.scale.z) * 0.7;
     const targetColor = this.getColorBasedOnVolume(volume);
-    this.sphere.material.color.lerp(targetColor, 0.2);
+    this.sphere.material.color.lerp(targetColor, 0.3);
   }
 }
 
