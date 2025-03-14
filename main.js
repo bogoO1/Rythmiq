@@ -13,6 +13,9 @@ import { createGround } from "./ground.js";
 import { addLight } from "./light.js";
 import AudioReactiveSphere from "./audioSphere.js";
 import { renderAudioWalls, createAudioWalls } from "./walls/audio_walls.js";
+// import { Texture_Rotate, Texture_Scroll_X } from "./box_object/box_fragment.js";
+import { createBoxes, updateBoxes } from "./box_object/cubes.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 // console.log(getPhongFShader(1));
 
@@ -23,21 +26,39 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
+camera.position.set(0, 0, -8);
+
 const renderer = new THREE.WebGLRenderer();
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const welcomeScreen = new WelcomeScreen(scene, camera);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
 
+let isRotating = false;
+const { cube1, cube2, star } = createBoxes(scene); // Create the boxes
+
+// Add Ambient Light
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
+scene.add(ambientLight);
+
+//ground implementation
+const groundGeometry = new THREE.PlaneGeometry(100, 100); // Adjust size as needed
+
+// Load the granite tile texture
 const loader = new THREE.TextureLoader();
+const graniteTexture = loader.load("textures/granite_tile.png"); // Make sure to use the correct path where the texture is stored
+graniteTexture.wrapS = graniteTexture.wrapT = THREE.RepeatWrapping;
+graniteTexture.repeat.set(10, 10); // Adjust based on the size of your geometry and the scale of the texture
 
+const welcomeScreen = new WelcomeScreen(scene, camera);
 // Camera settings
 camera.position.set(0, 0, 5); // Start at y = 0
 const moveSpeed = 5; // Movement speed
 const lookSpeed = 0.002; // Mouse sensitivity
 let yaw = 0,
   pitch = 0; // Camera rotation angles
-
 // Collision Detection System
 const collisionSystem = new CameraCollision(scene);
 
@@ -122,10 +143,22 @@ function animate() {
   // Render the scene
   //  renderer.render(scene, camera);
   renderAudioWalls(time);
+  updateBoxes(cube1, cube2, star, deltaTime, isRotating); // Update the boxes
   render();
 }
 
 animate();
+
+window.addEventListener("keydown", onKeyPress);
+function onKeyPress(event) {
+  switch (event.key) {
+    case "c":
+      isRotating = !isRotating;
+      break;
+    default:
+      break;
+  }
+}
 
 function handleWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
