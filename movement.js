@@ -21,7 +21,9 @@ document.body.requestPointerLock =
 document.addEventListener("click", () => document.body.requestPointerLock());
 
 const moveSpeed = 5; // Movement speed
+const sprintMultiplier = 30;
 const lookSpeed = 0.002; // Mouse sensitivity
+
 let yaw = 0,
   pitch = 0; // Camera rotation angles
 // Collision Detection System
@@ -31,7 +33,12 @@ function updateCameraPosition(deltaTime, camera, keys, walkingSound) {
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); // XZ only (Fixed Direction)
   const right = new THREE.Vector3(forward.z, 0, -forward.x); // Right vector perpendicular to forward and up
 
-  const velocity = moveSpeed * deltaTime;
+  let velocity = moveSpeed * deltaTime;
+
+  if ((keys["ShiftLeft"] || keys["ShiftRight"]) && keys["forward"]) {
+    velocity *= sprintMultiplier;
+  }
+
   let nextPosition = camera.position.clone();
 
   if (keys["forward"]) nextPosition.addScaledVector(forward, velocity);

@@ -36,7 +36,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0);
 
 let isRotating = false;
-const { cube1, cube2 } = createBoxes(scene); // Create the boxes
+const { cube1, cube2, star } = createBoxes(scene); // Create the boxes
 
 // Add Ambient Light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
@@ -52,16 +52,12 @@ graniteTexture.wrapS = graniteTexture.wrapT = THREE.RepeatWrapping;
 graniteTexture.repeat.set(10, 10); // Adjust based on the size of your geometry and the scale of the texture
 
 const welcomeScreen = new WelcomeScreen(scene, camera);
-
-const loader = new THREE.TextureLoader();
-
 // Camera settings
 camera.position.set(0, 0, 5); // Start at y = 0
 const moveSpeed = 5; // Movement speed
 const lookSpeed = 0.002; // Mouse sensitivity
 let yaw = 0,
   pitch = 0; // Camera rotation angles
-
 // Collision Detection System
 const collisionSystem = new CameraCollision(scene);
 
@@ -165,7 +161,7 @@ function animate() {
 
   // Render the scene
   //  renderer.render(scene, camera);
-  updateBoxes(cube1, cube2, deltaTime, isRotating); // Update the boxes
+  updateBoxes(cube1, cube2, star, deltaTime, isRotating); // Update the boxes
   render();
 }
 
