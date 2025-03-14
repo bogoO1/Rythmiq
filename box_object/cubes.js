@@ -43,7 +43,7 @@ export function updateBoxes(cube1, stars, deltaTime, isRotating) {
   cube1.mesh.rotation.y += THREE.MathUtils.degToRad(1);
 
   // Define new center position for orbiting stars
-  const starCenter = new THREE.Vector3(15, 5, -35);
+  const starCenter = new THREE.Vector3(35, 5, -15);
 
   // Circular motion parameters
   const orbitRadius = 5;
