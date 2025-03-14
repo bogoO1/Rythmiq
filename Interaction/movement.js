@@ -21,7 +21,7 @@ document.body.requestPointerLock =
 document.addEventListener("click", () => document.body.requestPointerLock());
 
 const moveSpeed = 5; // Movement speed
-const sprintMultiplier = 30;
+const sprintMultiplier = 2;
 const lookSpeed = 0.002; // Mouse sensitivity
 
 let yaw = 0,

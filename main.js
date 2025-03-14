@@ -37,7 +37,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0);
 
 let isRotating = false;
-const { cube1, cube2, star } = createBoxes(scene); // Create the boxes
+const { cube1, stars } = createBoxes(scene); // Create the boxes
 
 // Add Ambient Light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
@@ -201,7 +201,7 @@ function animate() {
   // Render the scene
   //  renderer.render(scene, camera);
   renderAudioWalls(time);
-  updateBoxes(cube1, star, deltaTime, isRotating); // Update the boxes
+  updateBoxes(cube1, stars, deltaTime, isRotating); // Update the boxes
   render();
 }
 
