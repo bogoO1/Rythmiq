@@ -4,14 +4,14 @@ export function createWalls(loader, scene, isCrossSection = false) {
   const wallTexture = loader.load("textures/seaworn_sandstone_brick.png");
   wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
   wallTexture.repeat.set(100, 10);
-  
-  const bumpTexture = loader.load('textures/seaworn_sandstone_brick.png');
+
+  const bumpTexture = loader.load("textures/seaworn_sandstone_brick.png");
   bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
   bumpTexture.repeat.set(100, 10);
 
   const wallMaterial = new THREE.MeshPhongMaterial({
     map: wallTexture,
-    bumpMap: bumpTexture, 
+    bumpMap: bumpTexture,
     bumpScale: 2,
     shininess: 10,
     specular: new THREE.Color(0x222222),
@@ -27,7 +27,7 @@ export function createWalls(loader, scene, isCrossSection = false) {
       left: new THREE.Mesh(wallGeometry, wallMaterial),
       right: new THREE.Mesh(wallGeometry, wallMaterial),
     };
-    
+
     walls.front.position.set(0, 4, -50);
     walls.back.position.set(0, 4, 50);
     walls.left.rotation.y = Math.PI / 2;
@@ -35,10 +35,16 @@ export function createWalls(loader, scene, isCrossSection = false) {
     walls.right.rotation.y = Math.PI / 2;
     walls.right.position.set(50, 4, 0);
 
+    const blackTarpGeo = new THREE.BoxGeometry(40, 10, 1);
+    const blackMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const blackTart = new THREE.Mesh(blackTarpGeo, blackMat);
+    blackTart.position.set(0, 4, -50);
+
     scene.add(walls.front);
     scene.add(walls.back);
     scene.add(walls.left);
     scene.add(walls.right);
+    scene.add(blackTart);
   } else {
     // Create walls with doorways
     // parallel walls along X-axis (split for doorway)

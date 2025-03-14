@@ -9,6 +9,7 @@ uniform float ambient, diffusivity, specularity, smoothness;
 uniform vec4 shape_color;
 uniform float maxDist;
 uniform vec3 planePos;
+uniform float time;
 
 varying vec3 outVec; // Receive the world position from the vertex shader
 varying float intensity;
@@ -20,6 +21,13 @@ vec3 hsv2rgb2(vec3 c) {
 	vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
 	vec3 p = abs(fract(c.xxx+K.xyz)*6.0-K.www);
 	return c.z*mix(K.xxx, clamp(p-K.xxx, 0.0, 1.0), c.y);
+}
+
+vec3 getIntensityColor(float intensityC, float angle, float time) {
+	// Normalize time to a range of [0, 1] for smooth color transitions
+	float normalizedTime = sin(time*5.0)*0.5+0.5;
+
+	INTENSITY_COLOR;
 }
 
 void main() {
@@ -85,7 +93,9 @@ void main() {
 
 	// Encode a unique identifier for the audio wall in the blue channel
 	float audioWallIdentifier = 0.0; // Use 0.0 to indicate this is an audio wall pixel
-	vec3 intensityColor = hsv2rgb2(vec3(intensityC*0.83, 1.0, intensityC*0.2+0.8));
+
+	vec3 intensityColor = getIntensityColor(intensityC, angle, time); // Transition from blue to red
+
 	// Set the output color with encoded data
 	gl_FragColor = vec4(intensityColor, audioWallIdentifier); // Red: intensity, Green: depth, Blue: identifier, Alpha: 1
 }

@@ -6,6 +6,7 @@ uniform float audio[FFT_SIZE];
 uniform vec3 planePos;
 uniform float maxDist;
 uniform float max_depth_intensity;
+uniform vec3 planeNormal;
 
 varying vec2 fragCoord;
 varying vec2 uVu;
@@ -29,7 +30,8 @@ void main() {
 
 	intensity = (float(audio[intensityLevel])*(1.0-intensityRemainder)+float(audio[intensityLevel+1])*intensityRemainder); // interpolate between the next intensity level and the current one.
 
-	vec4 originalPosition = projectionMatrix*modelViewMatrix*vec4(position+max_depth_intensity*intensity*worldNormal, 1.0);
+	vec4 originalPosition = projectionMatrix*viewMatrix*vec4((modelMatrix*vec4(position, 1.0)).xyz+max_depth_intensity*intensity*worldNormal, 1.0);
+	// vec4 originalPosition = projectionMatrix*modelViewMatrix*vec4(position+max_depth_intensity*intensity*worldNormal, 1.0);
 
 	gl_Position = originalPosition; // projectionMatrix*modelViewMatrix*vec4(position, 1.0);//
 

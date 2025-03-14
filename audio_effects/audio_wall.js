@@ -32,7 +32,14 @@ function createPlane(position, look, width, height) {
 // user selects mic or .mp3 file.
 
 export default class AudioWall {
-  constructor(scene, position, look, diameter, max_intensity = 2) {
+  constructor(
+    scene,
+    position,
+    look,
+    diameter,
+    intensity_color = "return hsv2rgb2(vec3(intensityC*0.83, 1.0, intensityC*0.2+0.8));",
+    max_intensity = 2
+  ) {
     // Start audio processing
     this.audioAnalyser;
     setUpBloomUniforms(position, look, max_intensity);
@@ -67,12 +74,14 @@ export default class AudioWall {
       shape_color: { value: shape_color },
       ambient: { value: 0.5 },
       planePos: { value: position },
+      planeNormal: { value: new THREE.Vector3().subVectors(look, position) },
       // normal: {
       //   value: new THREE.Vector3().subVectors(look, position).normalize(),
       // },
       maxDist: {
         value: diameter / 2,
       },
+      time: { value: 0.0 },
       max_depth_intensity: { value: max_intensity },
     };
 
@@ -88,6 +97,8 @@ export default class AudioWall {
     this.wall.layers.enable(BLOOM_SCENE);
 
     this.addAudioWall(scene);
+
+    this.intensity_color = intensity_color;
   }
 
   onNewAudio(stream, audioContext) {
@@ -99,13 +110,19 @@ export default class AudioWall {
     scene.add(this.wall);
   }
 
-  async setMaterial() {
+  async setMaterial(intensity_color) {
+    if (intensity_color !== null && intensity_color !== undefined) {
+      this.intensity_color = intensity_color;
+    }
     this.vertexShader = await getShader("/shaders/audio_wall.vert", [
       {
         textToReplace: "FFT_SIZE_REPLACE_1",
         replaceValue: (FFT_SIZE - 1).toString(),
       },
-      { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
+      {
+        textToReplace: "FFT_SIZE_REPLACE",
+        replaceValue: FFT_SIZE.toString(),
+      },
     ]);
     this.fragmentShader = await getShader("/shaders/audio_wall.frag", [
       {
@@ -113,6 +130,10 @@ export default class AudioWall {
         replaceValue: (FFT_SIZE - 1).toString(),
       },
       { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
+      {
+        textToReplace: "INTENSITY_COLOR;",
+        replaceValue: this.intensity_color,
+      },
     ]);
 
     this.material = new THREE.ShaderMaterial({
@@ -150,6 +171,8 @@ export default class AudioWall {
         previousAudioData[i] +
         (newFrequencyData[i] - previousAudioData[i]) * 0.5; // Interpolating with a factor of 0.1
     }
+
+    this.uniforms.time.value = time;
 
     // Visualization code
     const canvas = document.getElementById("audioVisualizer");
