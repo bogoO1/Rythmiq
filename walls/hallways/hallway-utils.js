@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { createWall } from "../wall-utils";
+
 export function buildHallway(
   scene,
   startPoint,
@@ -12,7 +13,7 @@ export function buildHallway(
   // start point is assumed to be the bottom left corner of the inside of the hallway
   // stat and end point are the inside bounds, the walls are assumed to be 1 unit thick.
 
-  const depth = direction.length;
+  const depth = direction.length();
 
   const up = new THREE.Vector3(0, 1, 0).multiplyScalar(height);
   const rightVec = new THREE.Vector3()

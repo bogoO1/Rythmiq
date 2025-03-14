@@ -31,15 +31,6 @@ export class Texture_Rotate {
 
             vec4 tex_color = texture2D(uTexture, rotatedUV);
             
-            float square_size = 0.3;
-            float outline_thickness = 0.07;
-            float inner_size = square_size - outline_thickness;
-            if (abs(rotatedUV.x - 0.5) < square_size && abs(rotatedUV.y - 0.5) < square_size) {
-                if (abs(rotatedUV.x - 0.5) > inner_size || abs(rotatedUV.y - 0.5) > inner_size) {
-                    tex_color = vec4(0.0, 0.0, 0.0, 1.0);
-                }
-            }
-
             gl_FragColor = tex_color;
         }
         `;

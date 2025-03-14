@@ -7,7 +7,6 @@ import { addWalls } from "./walls/default.js";
 import AudioWall from "./audio_effects/audio_wall.js";
 import render, { setUpBloom } from "./post_processing/setup_post.js";
 
-
 import { createWalls } from "./walls.js";
 import { createGradientSphere } from "./gradientSphere.js";
 import { createGround } from "./ground.js";
@@ -70,6 +69,7 @@ addLight(scene);
 createGround(loader, scene);
 
 //wall objects
+createWalls(loader, scene, true);
 createWalls(loader, scene);
 
 //gradient object
@@ -88,12 +88,10 @@ for (let z of zPositions) {
 for (let z of zPositions) {
   for (let y of yLevels) {
     for (let x of xPositions) {
-      createGradientSphere(scene, renderer, { x:z, y:y, z:x });
+      createGradientSphere(scene, renderer, { x: z, y: y, z: x });
     }
   }
 }
-
-
 
 //Audio_Reactive Sphere
 // Create an instance of AudioContext
@@ -107,18 +105,48 @@ function startAudioContext() {
 }
 
 // audio reactive sphere.
-document.addEventListener('click', startAudioContext, { once: true });
+document.addEventListener("click", startAudioContext, { once: true });
 
-const audioSphere  = new AudioReactiveSphere(scene, audioContext, { x: 40, y: 8, z: -44 });
-const audioSphere2 = new AudioReactiveSphere(scene, audioContext, { x: 44, y: 8, z: -40 });
-const audioSphere3 = new AudioReactiveSphere(scene, audioContext, { x: -40, y: 8, z: -44 });
-const audioSphere4 = new AudioReactiveSphere(scene, audioContext, { x: -44, y: 8, z: -40 });
-const audioSphere5 = new AudioReactiveSphere(scene, audioContext, { x: 40, y: 8, z: 44 });
-const audioSphere6 = new AudioReactiveSphere(scene, audioContext, { x: 44, y: 8, z: 40 });
-const audioSphere7 = new AudioReactiveSphere(scene, audioContext, { x: -40, y: 8, z: 44 });
-const audioSphere8 = new AudioReactiveSphere(scene, audioContext, { x: -44, y: 8, z: 40 });
-
-
+const audioSphere = new AudioReactiveSphere(scene, audioContext, {
+  x: 40,
+  y: 8,
+  z: -44,
+});
+const audioSphere2 = new AudioReactiveSphere(scene, audioContext, {
+  x: 44,
+  y: 8,
+  z: -40,
+});
+const audioSphere3 = new AudioReactiveSphere(scene, audioContext, {
+  x: -40,
+  y: 8,
+  z: -44,
+});
+const audioSphere4 = new AudioReactiveSphere(scene, audioContext, {
+  x: -44,
+  y: 8,
+  z: -40,
+});
+const audioSphere5 = new AudioReactiveSphere(scene, audioContext, {
+  x: 40,
+  y: 8,
+  z: 44,
+});
+const audioSphere6 = new AudioReactiveSphere(scene, audioContext, {
+  x: 44,
+  y: 8,
+  z: 40,
+});
+const audioSphere7 = new AudioReactiveSphere(scene, audioContext, {
+  x: -40,
+  y: 8,
+  z: 44,
+});
+const audioSphere8 = new AudioReactiveSphere(scene, audioContext, {
+  x: -44,
+  y: 8,
+  z: 40,
+});
 
 // Movement input tracking
 const keys = {};
@@ -173,7 +201,7 @@ function animate() {
   // Render the scene
   //  renderer.render(scene, camera);
   renderAudioWalls(time);
-  updateBoxes(cube1, cube2, star, deltaTime, isRotating); // Update the boxes
+  updateBoxes(cube1, star, deltaTime, isRotating); // Update the boxes
   render();
 }
 
