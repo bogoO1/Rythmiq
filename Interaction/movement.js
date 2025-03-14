@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { CameraCollision } from "./collision.js";
-import { WalkingSound } from "./walking_sound.js";
+import { WalkingSound } from "../walking_sound.js";
 /*
  * create a character to be able to test and have him move
  * will be implemented later based on our setup style
@@ -44,7 +44,6 @@ function updateCameraPosition(deltaTime, camera, keys, walkingSound) {
   // Check collision BEFORE moving
   const collision = collisionSystem.willCollide(nextPosition, camera);
   if (!collision.colliding) {
-    console.log("here");
     if (
       nextPosition.x == camera.position.x &&
       nextPosition.z == camera.position.z

@@ -5,7 +5,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
-import { getShader } from "../shader_utils";
+import { getShader } from "../../shader_utils";
 
 const darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
 const materials = {};
@@ -23,7 +23,7 @@ const bloomPass = new UnrealBloomPass(
 
 const params = {
   threshold: 0,
-  strength: 0.3, //1.2,
+  strength: 0.0, //1.2,
   radius: 0.5,
   exposure: 1,
 };
@@ -37,15 +37,14 @@ let gui;
 let bloomFolder;
 let toneMappingFolder;
 let myScene;
-let tempUniforms;
 
 bloomPass.threshold = params.threshold;
 bloomPass.strength = params.strength;
 bloomPass.radius = params.radius;
 
 export async function setUpBloom(renderer, scene, camera) {
-  const bloomFragShader = await getShader("/shaders/bloom/bloom_audio.frag");
-  const bloomVertShader = await getShader("/shaders/bloom/bloom_audio.vert");
+  const bloomFragShader = await getShader("/shaders/bloom/bloom.frag");
+  const bloomVertShader = await getShader("/shaders/bloom/bloom.vert");
 
   myScene = scene;
   renderScene = new RenderPass(scene, camera);
@@ -54,14 +53,12 @@ export async function setUpBloom(renderer, scene, camera) {
   bloomComposer.renderToScreen = false;
   bloomComposer.addPass(renderScene);
   bloomComposer.addPass(bloomPass);
-  // bloomTexture: { value: bloomComposer.renderTarget2.texture },
 
   mixPass = new ShaderPass(
     new THREE.ShaderMaterial({
       uniforms: {
         baseTexture: { value: null },
         bloomTexture: { value: bloomComposer.renderTarget2.texture },
-        ...tempUniforms,
       },
       vertexShader: bloomVertShader,
       fragmentShader: bloomFragShader,
@@ -109,24 +106,16 @@ export async function setUpBloom(renderer, scene, camera) {
   });
 }
 
-export function setUpBloomUniforms(planePos, normal, max_intensity) {
-  tempUniforms = {
-    planePos: { value: planePos },
-    planeNormal: { value: normal },
-    max_intensity: { value: max_intensity },
-  };
-}
-
 export default function render() {
   if (finalComposer == undefined) {
     return;
   }
-  myScene.traverse(darkenNonBloomed);
-  // scene.traverse(darkenNonBloomed);
-  bloomComposer.render();
-  // scene.traverse(darkenNonBloomed);
-  myScene.traverse(restoreMaterial);
 
+  myScene.traverse(darkenNonBloomed);
+
+  bloomComposer.render();
+
+  myScene.traverse(restoreMaterial);
   // render the entire scene, then render bloom scene on top
   finalComposer.render();
 }

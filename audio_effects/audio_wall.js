@@ -3,10 +3,9 @@ import * as THREE from "three";
 import { getShader } from "../shader_utils.js";
 import { startMicAudio, getFrequencyDataMic, FFT_SIZE } from "../audio.js";
 
-import {
-  BLOOM_SCENE,
-  setUpBloomUniforms,
-} from "../bloom_effect/bloom_audio.js";
+import { setUpBloomUniforms } from "../post_processing/setup_post.js";
+import { BLOOM_SCENE } from "../post_processing/bloom_effect/bloom_audio.js";
+// import { updateUniforms } from "../post_processing/bloom_effect/bloom_screen.js";
 
 const b = 5;
 
@@ -33,7 +32,7 @@ function createPlane(position, look, width, height) {
 // user selects mic or .mp3 file.
 
 export default class AudioWall {
-  constructor(camera, scene, position, look, width, height, max_intensity = 2) {
+  constructor(scene, position, look, diameter, max_intensity = 2) {
     // Start audio processing
     this.audioAnalyser;
     setUpBloomUniforms(position, look, max_intensity);
@@ -63,16 +62,6 @@ export default class AudioWall {
       { once: true }
     );
 
-    // document.addEventListener(
-    //   "click",
-    //   async () => {
-    //     setUpCustomAudio(this.onNewAudio);
-    //   },
-    //   { once: true }
-    // );
-    // this.analyser;
-    // (async () => (this.analyser = setUpCustomAudio(this.onNewAudio)))();
-
     this.uniforms = {
       audio: { value: new Array(FFT_SIZE).fill(0) },
       shape_color: { value: shape_color },
@@ -82,7 +71,7 @@ export default class AudioWall {
       //   value: new THREE.Vector3().subVectors(look, position).normalize(),
       // },
       maxDist: {
-        value: Math.min(width, height) / 2, //Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2)),
+        value: diameter / 2,
       },
       max_depth_intensity: { value: max_intensity },
     };
@@ -90,9 +79,7 @@ export default class AudioWall {
     this.vertexShader = "";
     this.fragmentShader = "";
 
-    console.log(this.vertexShader);
-
-    this.wall = createPlane(position, look, width, height);
+    this.wall = createPlane(position, look, diameter, diameter);
     this.wall.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
     });
@@ -104,7 +91,7 @@ export default class AudioWall {
   }
 
   onNewAudio(stream, audioContext) {
-    console.log("aud2: ", audioContext);
+    // console.log("aud2: ", audioContext);
     // this.audioAnalyser = startAudio(stream, audioContext);
   }
 
@@ -127,8 +114,6 @@ export default class AudioWall {
       },
       { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
     ]);
-
-    console.log(this.vertexShader);
 
     this.material = new THREE.ShaderMaterial({
       vertexShader: this.vertexShader,
@@ -186,5 +171,7 @@ export default class AudioWall {
         );
       });
     }
+
+    // updateUniforms(this.uniforms.audio.value);
   }
 }

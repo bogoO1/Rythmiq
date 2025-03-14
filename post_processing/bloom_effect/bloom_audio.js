@@ -5,7 +5,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
-import { getShader } from "../shader_utils";
+import { getShader } from "../../shader_utils";
 
 const darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
 const materials = {};
@@ -23,42 +23,36 @@ const bloomPass = new UnrealBloomPass(
 
 const params = {
   threshold: 0,
-  strength: 0.0, //1.2,
+  strength: 0.3, //1.2,
   radius: 0.5,
-  exposure: 1,
 };
 
 let bloomComposer;
-let renderScene;
-let outputPass;
 let mixPass;
-let finalComposer;
 let gui;
 let bloomFolder;
-let toneMappingFolder;
-let myScene;
+let tempUniforms;
 
 bloomPass.threshold = params.threshold;
 bloomPass.strength = params.strength;
 bloomPass.radius = params.radius;
 
-export async function setUpBloom(renderer, scene, camera) {
-  const bloomFragShader = await getShader("/shaders/bloom/bloom.frag");
-  const bloomVertShader = await getShader("/shaders/bloom/bloom.vert");
-
-  myScene = scene;
-  renderScene = new RenderPass(scene, camera);
+export async function setUpAudioBloom(renderer, scene, camera, renderScene) {
+  const bloomFragShader = await getShader("/shaders/bloom/bloom_audio.frag");
+  const bloomVertShader = await getShader("/shaders/bloom/bloom_audio.vert");
 
   bloomComposer = new EffectComposer(renderer);
   bloomComposer.renderToScreen = false;
   bloomComposer.addPass(renderScene);
   bloomComposer.addPass(bloomPass);
+  // bloomTexture: { value: bloomComposer.renderTarget2.texture },
 
   mixPass = new ShaderPass(
     new THREE.ShaderMaterial({
       uniforms: {
         baseTexture: { value: null },
         bloomTexture: { value: bloomComposer.renderTarget2.texture },
+        ...tempUniforms,
       },
       vertexShader: bloomVertShader,
       fragmentShader: bloomFragShader,
@@ -69,25 +63,16 @@ export async function setUpBloom(renderer, scene, camera) {
 
   mixPass.needsSwap = true;
 
-  outputPass = new OutputPass();
-
-  finalComposer = new EffectComposer(renderer);
-  finalComposer.addPass(renderScene);
-  finalComposer.addPass(mixPass);
-  finalComposer.addPass(outputPass);
-
   gui = new GUI();
 
   bloomFolder = gui.addFolder("bloom");
 
   bloomFolder.add(params, "threshold", 0.0, 1.0).onChange(function (value) {
     bloomPass.threshold = Number(value);
-    render();
   });
 
   bloomFolder.add(params, "strength", 0.0, 3).onChange(function (value) {
     bloomPass.strength = Number(value);
-    render();
   });
 
   bloomFolder
@@ -95,39 +80,27 @@ export async function setUpBloom(renderer, scene, camera) {
     .step(0.01)
     .onChange(function (value) {
       bloomPass.radius = Number(value);
-      render();
     });
-
-  toneMappingFolder = gui.addFolder("tone mapping");
-
-  toneMappingFolder.add(params, "exposure", 0.1, 2).onChange(function (value) {
-    renderer.toneMappingExposure = Math.pow(value, 4.0);
-    render();
-  });
+  return { bloomComposer, mixPass };
 }
 
-export default function render() {
-  if (finalComposer == undefined) {
-    return;
-  }
-  myScene.traverse(darkenNonBloomed);
-  // scene.traverse(darkenNonBloomed);
-  bloomComposer.render();
-  // scene.traverse(darkenNonBloomed);
-  myScene.traverse(restoreMaterial);
-
-  // render the entire scene, then render bloom scene on top
-  finalComposer.render();
+export function setUpBloomUniformsHelper(planePos, normal, max_intensity) {
+  tempUniforms = {
+    planePos: { value: planePos },
+    planeNormal: { value: normal },
+    max_intensity: { value: max_intensity },
+  };
+  return tempUniforms;
 }
 
-function darkenNonBloomed(obj) {
+export function darkenNonBloomed(obj) {
   if (obj.isMesh && bloomLayer.test(obj.layers) === false) {
     materials[obj.uuid] = obj.material;
     obj.material = darkMaterial;
   }
 }
 
-function restoreMaterial(obj) {
+export function restoreMaterial(obj) {
   if (materials[obj.uuid]) {
     obj.material = materials[obj.uuid];
     delete materials[obj.uuid];
