@@ -1,11 +1,10 @@
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { getShader } from "../../shader_utils";
+import { FFT_SIZE } from "../../audio";
 
 const darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
 const materials = {};
@@ -23,7 +22,7 @@ const bloomPass = new UnrealBloomPass(
 
 const params = {
   threshold: 0,
-  strength: 0.3, //1.2,
+  strength: 3.0, //1.2,
   radius: 0.5,
 };
 
@@ -37,9 +36,21 @@ bloomPass.threshold = params.threshold;
 bloomPass.strength = params.strength;
 bloomPass.radius = params.radius;
 
-export async function setUpAudioBloom(renderer, scene, camera, renderScene) {
-  const bloomFragShader = await getShader("/shaders/bloom/bloom_audio.frag");
-  const bloomVertShader = await getShader("/shaders/bloom/bloom_audio.vert");
+export async function setUpScreenBloom(renderer, scene, camera, renderScene) {
+  const bloomFragShader = await getShader("/shaders/bloom/bloom_screen.frag", [
+    {
+      textToReplace: "FFT_SIZE_REPLACE_1",
+      replaceValue: (FFT_SIZE - 1).toString(),
+    },
+    { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
+  ]);
+  const bloomVertShader = await getShader("/shaders/bloom/bloom_screen.vert", [
+    {
+      textToReplace: "FFT_SIZE_REPLACE_1",
+      replaceValue: (FFT_SIZE - 1).toString(),
+    },
+    { textToReplace: "FFT_SIZE_REPLACE", replaceValue: FFT_SIZE.toString() },
+  ]);
 
   bloomComposer = new EffectComposer(renderer);
   bloomComposer.renderToScreen = false;
@@ -84,12 +95,12 @@ export async function setUpAudioBloom(renderer, scene, camera, renderScene) {
   return { bloomComposer, mixPass };
 }
 
-export function setUpBloomUniformsHelper(planePos, normal, max_intensity) {
+export function updateUniforms(audio) {
   tempUniforms = {
-    planePos: { value: planePos },
-    planeNormal: { value: normal },
-    max_intensity: { value: max_intensity },
+    audio: { value: audio },
   };
+  mixPass.material.uniforms = tempUniforms;
+
   return tempUniforms;
 }
 

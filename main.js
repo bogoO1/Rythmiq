@@ -1,10 +1,10 @@
 // main.js
 import * as THREE from "three";
-import { CameraCollision } from "./collision.js";
+import { CameraCollision } from "./Interaction/collision.js";
 import { WelcomeScreen } from "./loading_screen.js";
-import { PlayerController } from "./movement.js";
+import { PlayerController } from "./Interaction/movement.js";
 import { addWalls } from "./walls/default.js";
-import AudioWall from "./mic_effect/audio_wall.js";
+import AudioWall from "./audio_effects/audio_wall.js";
 import render, { setUpBloom } from "./post_processing/setup_post.js";
 
 import { createWalls } from "./walls.js";
@@ -12,6 +12,7 @@ import { createGradientSphere } from "./gradientSphere.js";
 import { createGround } from "./ground.js";
 import { addLight } from "./light.js";
 import AudioReactiveSphere from "./audioSphere.js";
+import { renderAudioWalls, createAudioWalls } from "./walls/audio_walls.js";
 
 // console.log(getPhongFShader(1));
 
@@ -105,26 +106,8 @@ document.addEventListener("mousemove", playerController.handleMouseMove);
 document.addEventListener("keydown", playerController.handleKeyDown);
 document.addEventListener("keyup", playerController.handleKeyUp);
 
-const audioWall = new AudioWall(
-  camera,
-  scene,
-  new THREE.Vector3(0, 5, -7),
-  new THREE.Vector3(0, 5, 0),
-  25,
-  15
-);
+createAudioWalls(renderer, scene, camera);
 
-// const audioWall2 = new AudioWall(
-//   camera,
-//   scene,
-//   new THREE.Vector3(0, 10, -40),
-//   new THREE.Vector3(0, 5, 0),
-//   25,
-//   15
-// );
-
-(async () => await audioWall.setMaterial())();
-// (async () => await audioWall2.setMaterial())();
 (async () => await setUpBloom(renderer, scene, camera))(); // must be called after audio wall is declared!!
 
 let time = 0;
@@ -134,12 +117,11 @@ function animate() {
   time += deltaTime;
   playerController.update(deltaTime);
   requestAnimationFrame(animate);
-
-  audioWall.updateAudioWall(time);
   // audioWall2.updateAudioWall(time);
 
   // Render the scene
   //  renderer.render(scene, camera);
+  renderAudioWalls(time);
   render();
 }
 
