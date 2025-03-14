@@ -21,7 +21,7 @@ export function createWalls(loader, scene, isCrossSection = false) {
       left: new THREE.Mesh(wallGeometry, wallMaterial),
       right: new THREE.Mesh(wallGeometry, wallMaterial),
     };
-
+    
     walls.front.position.set(0, 4, -50);
     walls.back.position.set(0, 4, 50);
     walls.left.rotation.y = Math.PI / 2;
