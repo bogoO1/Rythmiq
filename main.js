@@ -78,7 +78,7 @@ const xPositions = [-4, 0, 4];
 const yLevels = [9, 5, 1];
 const zPositions = [-47, 47];
 
-for (let z of zPositions) {
+for (let z of zPositions.slice(1)) {
   for (let y of yLevels) {
     for (let x of xPositions) {
       createGradientSphere(scene, renderer, { x, y, z });
