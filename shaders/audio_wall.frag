@@ -92,10 +92,9 @@ void main() {
 	depthValue = clamp(depthValue, 0.0, 1.0); // Ensure it's in the range [0, 1]
 
 	// Encode a unique identifier for the audio wall in the blue channel
+
 	float audioWallIdentifier = 0.0; // Use 0.0 to indicate this is an audio wall pixel
-
-	vec3 intensityColor = getIntensityColor(intensityC, angle, time); // Transition from blue to red
-
+	vec3 intensityColor = getIntensityColor(intensityC, angle, time);
 	// Set the output color with encoded data
-	gl_FragColor = vec4(intensityColor, audioWallIdentifier); // Red: intensity, Green: depth, Blue: identifier, Alpha: 1
+	gl_FragColor = vec4(intensityColor, audioWallIdentifier);
 }
