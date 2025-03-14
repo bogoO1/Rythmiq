@@ -6,8 +6,15 @@ export function createWalls(loader, scene) {
     wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
     wallTexture.repeat.set(100, 10);
 
+    // Load the bump map texture
+    const bumpTexture = loader.load("textures/seaworn_sandstone_brick.png");
+    bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
+    bumpTexture.repeat.set(100, 10);
+
     const wallMaterial = new THREE.MeshPhongMaterial({
       map: wallTexture,
+      bumpMap: bumpTexture,
+      bumpScale: 2,
       shininess: 10, // Reduced shininess for a matte look
       specular: new THREE.Color(0x222222)
     });
@@ -20,7 +27,7 @@ export function createWalls(loader, scene) {
         left: new THREE.Mesh(wallGeometry, wallMaterial),
         right: new THREE.Mesh(wallGeometry, wallMaterial)
     };
-
+    
     walls.front.position.set(0, 4, -50);
     walls.back.position.set(0, 4, 50);
     walls.left.rotation.y = Math.PI / 2;
