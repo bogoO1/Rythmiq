@@ -13,7 +13,7 @@ export class Box {
   }
 
   init() {
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const geometry = new THREE.BoxGeometry(4, 4, 4);
     const textureLoader = new THREE.TextureLoader();
 
     // Load two textures to be used in the shader
