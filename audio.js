@@ -1,4 +1,5 @@
-export const FFT_SIZE = 64;
+import { FFT_SIZE } from "./fft_size";
+import { detectBeatChange } from "./audio_effects/audio_logic";
 
 // Function to start audio processing
 export async function startMicAudio() {
@@ -49,15 +50,51 @@ export function getFrequencyDataMic(analyser) {
   return frequencyData;
 }
 
-export function startAudio(stream, audioContext) {
+export function startAudio(mic_wall) {
   try {
-    console.log("stream: ", stream);
-    const analyser = handleSuccess(stream, audioContext);
-    console.log("Audio context state:", audioContext.state);
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = FFT_SIZE;
+
+    // Change the audio file path to a different format or location
+    let audioElement = new Audio("audio_effects/EvanSong.mp3");
+    audioElement.loop = true; // Set to loop if desired
+
+    // Connect the audio element to the audio context
+    let source = audioContext.createMediaElementSource(audioElement);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    // Play the audio
+    audioElement
+      .play()
+      .then(() => {
+        console.log("Audio is playing successfully");
+
+        // Ensure the audio context is running
+        if (audioContext.state === "suspended") {
+          audioContext.resume().then(() => {
+            // Delay the first call to detectBeatChange
+            setTimeout(() => {
+              detectBeatChange(analyser, mic_wall); // Call after resuming
+            }, 100); // Delay for 100ms
+          });
+        } else {
+          // Delay the first call to detectBeatChange
+          setTimeout(() => {
+            detectBeatChange(analyser, mic_wall); // Call directly if already running
+          }, 100); // Delay for 100ms
+        }
+      })
+      .catch((error) => {
+        console.error("Error playing audio:", error);
+      });
+
     console.log("Audio stream connected successfully");
     return analyser;
   } catch (error) {
-    console.error("Error accessing microphone:", error);
+    console.error("Error accessing audio context:", error);
   }
 }
 

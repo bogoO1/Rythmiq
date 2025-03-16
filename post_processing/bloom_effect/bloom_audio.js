@@ -71,9 +71,9 @@ export async function setUpAudioBloom(renderer, scene, camera, renderScene) {
     bloomPass.threshold = Number(value);
   });
 
-  bloomFolder.add(params, "strength", 0.0, 3).onChange(function (value) {
-    bloomPass.strength = Number(value);
-  });
+  // bloomFolder.add(params, "strength", 0.0, 3).onChange(function (value) {
+  //   bloomPass.strength = Number(value);
+  // });
 
   bloomFolder
     .add(params, "radius", 0.0, 1.0)
@@ -82,6 +82,10 @@ export async function setUpAudioBloom(renderer, scene, camera, renderScene) {
       bloomPass.radius = Number(value);
     });
   return { bloomComposer, mixPass };
+}
+
+export function setBloomStrength(newStrength) {
+  bloomPass.strength = newStrength;
 }
 
 export function setUpBloomUniformsHelper(planePos, normal, max_intensity) {

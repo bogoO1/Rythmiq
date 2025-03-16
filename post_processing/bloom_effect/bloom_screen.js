@@ -4,7 +4,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { getShader } from "../../shader_utils";
-import { FFT_SIZE } from "../../audio";
+import { FFT_SIZE } from "../../fft_size";
 
 const darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
 const materials = {};

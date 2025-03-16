@@ -1,8 +1,15 @@
 import * as THREE from "three";
 
 import { getShader } from "../shader_utils.js";
-import { startMicAudio, getFrequencyDataMic, FFT_SIZE } from "../audio.js";
+import {
+  startMicAudio,
+  startAudio,
+  getFrequencyDataMic,
+  getFrequencyData,
+} from "../audio.js";
 
+import { FFT_SIZE } from "../fft_size.js";
+import { changeEffect } from "../walls/audio_walls.js";
 import { setUpBloomUniforms } from "../post_processing/setup_post.js";
 import { BLOOM_SCENE } from "../post_processing/bloom_effect/bloom_audio.js";
 // import { updateUniforms } from "../post_processing/bloom_effect/bloom_screen.js";
@@ -63,8 +70,8 @@ export default class AudioWall {
 
     document.addEventListener(
       "click",
-      async () => {
-        this.analyser = await startMicAudio();
+      () => {
+        this.analyser = startAudio(this); //startMicAudio();
       },
       { once: true }
     );
@@ -102,7 +109,6 @@ export default class AudioWall {
   }
 
   onNewAudio(stream, audioContext) {
-    // console.log("aud2: ", audioContext);
     // this.audioAnalyser = startAudio(stream, audioContext);
   }
 
@@ -149,27 +155,34 @@ export default class AudioWall {
     return (Math.pow(b, x) - 1) / (b - 1);
   }
 
+  checkForBeatChange(previousAudioData, frequencyData) {
+    let prevSum = previousAudioData.reduce((sum, val) => sum + val, 0);
+    let currSum = frequencyData.reduce((sum, val) => sum + val, 0);
+
+    // console.log(currSum, " ", prevSum);
+
+    if (currSum > prevSum * 1.4 && currSum >= FFT_SIZE * 0.3) {
+      changeEffect(this);
+    }
+  }
+
   updateAudioWall(time) {
     // Get frequency data
-    const frequencyData = getFrequencyDataMic(this.analyser);
+    const frequencyDataU = getFrequencyData(this.analyser);
     // for (let i = 0; i < frequencyData.length; i++) {
     //   frequencyData[i] = i / 2;
     // }
     const previousAudioData = this.uniforms.audio.value;
 
-    let newFrequencyData = [];
+    const frequencyData = Array.from(frequencyDataU).map(
+      (data) => Number(data) / 255
+    );
+
+    this.checkForBeatChange(previousAudioData, frequencyData);
 
     for (let i = 0; i < frequencyData.length; i++) {
-      // newFrequencyData[i] = this.attenuationFunction(
-      //   Number(frequencyData[i]) / 255.0
-      // );
-      newFrequencyData[i] = frequencyData[i] / 255.0;
-    }
-    // console.log(newFrequencyData);
-    for (let i = 0; i < newFrequencyData.length; i++) {
       this.uniforms.audio.value[i] =
-        previousAudioData[i] +
-        (newFrequencyData[i] - previousAudioData[i]) * 0.5; // Interpolating with a factor of 0.1
+        previousAudioData[i] + (frequencyData[i] - previousAudioData[i]) * 0.5; // Interpolating with a factor of 0.1
     }
 
     this.uniforms.time.value = time;

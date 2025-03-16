@@ -102,48 +102,26 @@ const shuffle = (array) => {
 export function createAudioWalls(renderer, scene, camera) {
   const color_effects = shuffle(color_effects_ordered);
 
+  const currEffect =
+    color_effects[Math.floor(Math.random() * color_effects.length)];
+
   audioWalls.push(
     new AudioWall(
       scene,
-      new THREE.Vector3(-16, 5, -16),
-      new THREE.Vector3(0, 5, 0),
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, 0, -5),
       10,
-      color_effects.pop() || undefined,
-      5
-    ),
-    new AudioWall(
-      scene,
-      new THREE.Vector3(16, 5, -16),
-      new THREE.Vector3(0, 5, 0),
-      10,
-      color_effects.pop() || undefined,
-      5
-    ),
-    new AudioWall(
-      scene,
-      new THREE.Vector3(-16, 5, 16),
-      new THREE.Vector3(0, 5, 0),
-      10,
-      color_effects.pop() || undefined,
-
-      5
-    ),
-    new AudioWall(
-      scene,
-      new THREE.Vector3(16, 5, 16),
-      new THREE.Vector3(0, 5, 0),
-      10,
-      color_effects.pop() || undefined,
-      5
-    ),
-    new AudioWall(
-      scene,
-      new THREE.Vector3(0, 5, -47),
-      new THREE.Vector3(0, 5, 0),
-      10,
-      color_effects.pop() || undefined,
-      5
+      currEffect,
+      2
     )
+    // new AudioWall(
+    //   scene,
+    //   new THREE.Vector3(0, 0, 0),
+    //   new THREE.Vector3(0, 0, 5),
+    //   10,
+    //   currEffect,
+    //   4
+    // )
   );
 
   (async () =>
@@ -151,19 +129,26 @@ export function createAudioWalls(renderer, scene, camera) {
       audioWalls.map((audioWall) => audioWall.setMaterial())
     ))();
 
-  setInterval(() => {
-    const color_effects_i = shuffle(color_effects_ordered);
-    (async () =>
-      await Promise.all(
-        audioWalls.map((audioWall) =>
-          audioWall.setMaterial(color_effects_i.pop() || undefined)
-        )
-      ))();
-  }, 5000);
   // (async () => await audioWall2.setMaterial())();
   //   (async () => await setUpAudioBloom(renderer, scene, camera))(); // must be called after audio wall is declared!!
 }
 
 export function renderAudioWalls(time) {
   audioWalls.forEach((audioWall) => audioWall.updateAudioWall(time));
+}
+
+export function changeEffectAll() {
+  let newEffect =
+    color_effects[Math.floor(Math.random() * color_effects.length)];
+
+  Promise.all(audioWalls.map((audioWall) => audioWall.setMaterial(newEffect)));
+}
+
+export function changeEffect(mic_wall) {
+  let newEffect =
+    color_effects_ordered[
+      Math.floor(Math.random() * color_effects_ordered.length)
+    ];
+
+  mic_wall.setMaterial(newEffect);
 }
