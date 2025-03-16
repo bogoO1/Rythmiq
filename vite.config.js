@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import { resolve } from "path";
 
 export default defineConfig({
-  base: "/Rythmiq/", // Make sure this matches the GitHub repo name
+  base: "/Rythmiq/", // Ensure this matches your deployment path
   build: {
     rollupOptions: {
       input: {
@@ -10,5 +10,5 @@ export default defineConfig({
       },
     },
   },
-  assetsInclude: ["**/*.frag", "**/*.vert", "**/*.mp3"], // Tells Vite to include shader files
+  assetsInclude: ["**/*.frag", "**/*.vert", "**/*.mp3"], // Include shader files
 });
