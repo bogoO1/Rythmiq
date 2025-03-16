@@ -10,5 +10,5 @@ export default defineConfig({
       },
     },
   },
-  assetsInclude: ["**/*.frag", "**/*.vert"], // Tells Vite to include shader files
+  assetsInclude: ["**/*.frag", "**/*.vert", "**/*.mp3"], // Tells Vite to include shader files
 });

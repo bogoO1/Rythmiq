@@ -1,6 +1,22 @@
+const basePath = import.meta.env.BASE_URL; // This uses Vite's base config
+
 export async function getShader(path, replacements = []) {
   try {
-    let shaderText = await (await fetch(path)).text();
+    const fullPath = `${basePath}${path}`; // Use the base URL
+    const response = await fetch(fullPath);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        "Error loading shader:",
+        path,
+        "; Status:",
+        response.status,
+        "; Response:",
+        errorText
+      );
+      return "";
+    }
+    let shaderText = await response.text();
     replacements.forEach(({ textToReplace, replaceValue }) => {
       shaderText = shaderText.replaceAll(textToReplace, replaceValue);
     });

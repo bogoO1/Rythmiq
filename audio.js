@@ -1,5 +1,6 @@
 import { FFT_SIZE } from "./fft_size";
 import { detectBeatChange } from "./audio_effects/audio_logic";
+const basePath = import.meta.env.BASE_URL; // This uses Vite's base config
 
 // Function to start audio processing
 export async function startMicAudio() {
@@ -57,8 +58,8 @@ export function startAudio(mic_wall) {
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = FFT_SIZE;
 
-    // Change the audio file path to a different format or location
-    let audioElement = new Audio("audio_effects/EvanSong.mp3");
+    const audioPath = `${basePath}/audio/EvanSong.mp3`; // Ensure this path is correct
+    let audioElement = new Audio(audioPath);
     audioElement.loop = true; // Set to loop if desired
 
     // Connect the audio element to the audio context
