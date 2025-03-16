@@ -1,13 +1,3 @@
-let fragmentShaderPhong, vertexShaderPhong;
-try {
-  fragmentShaderPhong = await (await fetch("./shaders/phong.frag")).text();
-  vertexShaderPhong = await (await fetch("./shaders/phong.vert")).text();
-} catch (error) {
-  console.error("Error loading shaders:", error);
-  fragmentShaderPhong = ""; // Set to an empty string to prevent crashes
-  vertexShaderPhong = "";
-}
-
 export async function getShader(path, replacements = []) {
   try {
     let shaderText = await (await fetch(path)).text();
